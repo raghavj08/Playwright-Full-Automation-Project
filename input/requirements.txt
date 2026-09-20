@@ -1,0 +1,88 @@
+Trello QA Requirements
+
+1. Trello Homepage
+
+1. Verify that the Trello homepage opens successfully.
+2. Verify that the Trello page loads without errors.
+3. Verify that the Trello logo is visible.
+4. Verify that the "Log in" option is available.
+5. Verify that the "Get Trello for free" option is available.
+6. Verify that the "Features" section is available.
+7. Verify that the "Plans" section is available.
+
+2. User Login
+
+1. Verify that a user can successfully log in using valid credentials stored in `credentials.json`.
+2. Verify that the user is redirected to the appropriate Trello page after successful login.
+3. Verify that the user can see the expected authenticated-user interface after login.
+
+Negative Login Tests
+
+4. Verify that login fails when an invalid username/email is provided.
+5. Verify that login fails when an invalid password is provided.
+6. Verify that login fails when both username/email and password are invalid.
+7. Verify that the appropriate validation or error message is displayed for invalid login credentials.
+8. Verify that login cannot be completed when the required username/email field is empty.
+9. Verify that login cannot be completed when the required password field is empty.
+
+3. Create a New Board
+
+After successful login:
+
+1. Verify that the user can create a new board with a valid board name.
+2. Verify that the newly created board is displayed successfully.
+3. Verify that the created board has the expected board name.
+4. Verify the board creation operation using the Trello REST API.
+5. Verify that the API response indicates successful board creation.
+6. Verify through the API that the newly created board exists and has the expected board name.
+
+4. Create a New Card
+
+After the board has been created:
+
+1. Verify that the user can create a new card in the appropriate list.
+2. Verify that the newly created card is displayed on the board.
+3. Verify that the newly created card has the expected card name.
+4. Verify the card creation operation using the Trello REST API.
+5. Verify that the API response indicates successful card creation.
+6. Verify through the API that the newly created card exists and belongs to the expected board/list.
+
+5. Delete the Newly Created Card
+
+1. Delete the newly created card.
+2. Verify through the Trello UI that the card is no longer present.
+3. Verify the card deletion operation using the Trello REST API.
+4. Verify that the API confirms that the card has been deleted or is no longer available.
+
+6. Add Text to the First Card
+
+1. Open the first card on the test board.
+2. Add valid text to the card description.
+3. Save the description.
+4. Verify through the UI that the added text is displayed correctly.
+5. Verify the updated card description using the Trello REST API.
+6. Verify that the API response contains the expected card description.
+
+7. Delete Text from the First Card
+
+1. Open the first card on the test board.
+2. Remove the existing text from the card description.
+3. Save the changes.
+4. Verify through the UI that the card description is empty.
+5. Verify the updated card description using the Trello REST API.
+6. Verify through the API that the card description is empty.
+
+8. API Validation
+
+For all Trello operations performed through the REST API:
+
+1. Verify that the request is sent to the correct Trello API endpoint.
+2. Verify the HTTP response status code.
+3. Verify that the API response contains the expected data.
+4. Verify that the created or modified resource has the expected ID and properties.
+5. Verify that the UI state matches the state returned by the API where applicable.
+6. Verify that failed API requests are handled and reported correctly.
+
+Use the official Trello REST API documentation when implementing API-based validation:
+
+https://developer.atlassian.com/cloud/trello/rest/

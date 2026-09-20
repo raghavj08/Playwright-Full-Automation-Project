@@ -1,0 +1,717 @@
+You are an expert QA Automation Engineer specializing in Python, Pytest, and Playwright.
+
+Generate a complete Playwright automation test file for the website:
+
+{website_url}
+
+The generated test code will be saved directly as:
+
+tests/testcases.py
+
+The test plan to automate is:
+
+{test_plan}
+
+============================================================
+GENERAL REQUIREMENTS
+====================
+
+1. Generate Python code using:
+
+   * Pytest
+   * Playwright
+   * Playwright APIRequestContext for API testing
+
+2. Keep the code beginner-friendly and easy to understand.
+
+3. Use Page Object Model where it makes the code easier to maintain.
+
+4. Do not use the Python `requests` library.
+
+5. Do not use Postman code or Postman collections.
+
+6. API operations must use Playwright's:
+
+   playwright.request.new_context()
+
+7. Use Pytest fixtures wherever appropriate.
+
+8. Do not hard-code usernames, passwords, API keys, or API tokens.
+
+9. Do not print passwords, API keys, API tokens, or other secrets.
+
+10. Do not write decrypted credentials to any file.
+
+11. Do not include credentials in Allure reports.
+
+12. The generated code must be executable using:
+
+pytest tests/testcases.py
+
+13. The generated code must work with the existing:
+
+tests/conftest.py
+
+14. Do not create unnecessary files.
+
+15. Output ONLY the Python code for `tests/testcases.py`.
+
+16. Do not wrap the final answer in Markdown code fences.
+
+17. Do not include explanations outside the Python code.
+
+============================================================
+CREDENTIAL HANDLING
+===================
+
+UI credentials are stored in:
+
+input/credentials.json
+
+The file contains:
+
+{
+"username": "[user@example.com](mailto:user@example.com)",
+"password": "ENCRYPTED_PASSWORD"
+}
+
+The password is encrypted using Fernet.
+
+Import:
+
+from encryption import decrypt_value
+
+Load the credentials using:
+
+import json
+
+with open(
+"input/credentials.json",
+"r",
+encoding="utf-8"
+) as file:
+credentials = json.load(file)
+
+The username should be read directly:
+
+username = credentials["username"]
+
+The password must be decrypted:
+
+password = decrypt_value(
+credentials["password"]
+)
+
+============================================================
+API CREDENTIAL HANDLING
+=======================
+
+API credentials are stored in:
+
+input/api_credentials.json
+
+The file contains:
+
+{
+"api_key": "ENCRYPTED_API_KEY",
+"token": "ENCRYPTED_TOKEN"
+}
+
+Load the credentials using:
+
+with open(
+"input/api_credentials.json",
+"r",
+encoding="utf-8"
+) as file:
+api_credentials = json.load(file)
+
+Decrypt the API key:
+
+api_key = decrypt_value(
+api_credentials["api_key"]
+)
+
+Decrypt the token:
+
+token = decrypt_value(
+api_credentials["token"]
+)
+
+Never hard-code these values.
+
+Never print these values.
+
+============================================================
+ENCRYPTION
+==========
+
+The project already contains:
+
+encryption.py
+
+The file provides:
+
+decrypt_value()
+
+Use this existing function.
+
+Do NOT create another encryption implementation.
+
+Do NOT generate another encryption key.
+
+Do NOT modify encryption.py.
+
+Only use:
+
+from encryption import decrypt_value
+
+============================================================
+GEMINI API KEY
+==============
+
+The Gemini API key is NOT used by the generated Playwright tests.
+
+Do not read or modify the Gemini API key.
+
+The Gemini API key is handled separately by main.py using:
+
+GEMINI_API_KEY
+
+Therefore, do not add Gemini API code to tests/testcases.py.
+
+============================================================
+TEST STRUCTURE
+==============
+
+Organize the generated tests clearly.
+
+Use descriptive test names.
+
+API tests should use names such as:
+
+test_api_create_board()
+
+test_api_create_card()
+
+test_api_delete_card()
+
+test_api_update_card_description()
+
+test_api_delete_card_description()
+
+UI tests should use names such as:
+
+test_ui_login()
+
+test_ui_verify_board()
+
+test_ui_verify_card()
+
+Use clear separation between API operations and UI verification.
+
+============================================================
+LOGIN TESTS
+===========
+
+Generate both positive and negative login tests.
+
+Positive login:
+
+1. Load username from:
+
+input/credentials.json
+
+2. Decrypt the password using:
+
+decrypt_value()
+
+3. Open the Trello login page.
+
+4. Enter the username and password.
+
+5. Submit the login form.
+
+6. Verify that login was successful.
+
+Negative login:
+
+1. Use the valid username.
+
+2. Use an intentionally invalid password.
+
+3. Attempt login.
+
+4. Verify that an appropriate error message or failed-login state is displayed.
+
+Do not use the real password as the invalid password.
+
+Do not print credentials.
+
+============================================================
+API TESTING
+===========
+
+API testing must be performed using Playwright's API request context.
+
+Use:
+
+playwright.request.new_context()
+
+Do not use:
+
+requests
+
+Do not use:
+
+urllib
+
+Do not use Postman.
+
+The API credentials must be loaded from:
+
+input/api_credentials.json
+
+and decrypted using:
+
+decrypt_value()
+
+============================================================
+API CREATE BOARD
+================
+
+Create a valid Trello board using the Trello API.
+
+Requirements:
+
+1. Create an API request context.
+
+2. Use the decrypted API key and token.
+
+3. Send the appropriate board creation request.
+
+4. Verify that the API response is successful.
+
+5. Verify the response contains the expected board information.
+
+6. Extract and store the newly created board ID.
+
+7. Use the board ID for later operations when required.
+
+Do not hard-code a board ID.
+
+============================================================
+UI VERIFY BOARD
+===============
+
+After creating the board through the API:
+
+1. Open the Trello UI.
+
+2. Log in using the decrypted UI credentials.
+
+3. Navigate to the appropriate boards area.
+
+4. Verify that the newly created board is visible.
+
+5. Use the board name or board ID where appropriate.
+
+6. Do not assume that a hard-coded board already exists.
+
+============================================================
+API CREATE CARD
+===============
+
+Create a valid card using the Trello API.
+
+The generated code should:
+
+1. Use the appropriate list ID.
+
+2. Create the card using the API.
+
+3. Verify the API response.
+
+4. Extract the newly created card ID.
+
+5. Store the card ID for later operations.
+
+Do not hard-code a card ID.
+
+If a list ID must be obtained from the newly created board, retrieve it using the appropriate API operation rather than hard-coding it.
+
+============================================================
+UI VERIFY CARD
+==============
+
+After creating the card through the API:
+
+1. Open the relevant board in the UI.
+
+2. Locate the newly created card.
+
+3. Verify that the card is visible.
+
+4. Verify the card title where appropriate.
+
+============================================================
+DELETE CARD
+===========
+
+Delete the newly created card through the API.
+
+Requirements:
+
+1. Use the card ID obtained during card creation.
+
+2. Send the appropriate API request.
+
+3. Verify the API response.
+
+4. Verify that the card was successfully deleted.
+
+5. Open or refresh the relevant UI page.
+
+6. Verify that the card is no longer visible.
+
+============================================================
+CARD DESCRIPTION / TEXT
+=======================
+
+The test plan requires adding text to a card and deleting that text.
+
+Use the appropriate Trello card update API operation.
+
+The flow should be:
+
+API:
+Create or identify the test card
+↓
+API:
+Add description/text
+↓
+Verify API response
+↓
+UI:
+Open the card
+↓
+Verify description/text exists
+↓
+API:
+Delete description/text
+↓
+Verify API response
+↓
+UI:
+Refresh/open the card
+↓
+Verify description/text is removed
+
+============================================================
+IMPORTANT CARD RULE
+===================
+
+Prefer using the card created by the test rather than modifying an unrelated existing card.
+
+Store the created card ID and use that ID for subsequent operations.
+
+Do not accidentally modify unrelated user data.
+
+If the test plan explicitly requires an existing first card, identify that card through the UI/API rather than assuming a hard-coded ID.
+
+============================================================
+API AND UI VALIDATION
+=====================
+
+Whenever an API operation changes application state, verify that state through the UI where required by the test plan.
+
+Example:
+
+API creates board
+↓
+Verify API response
+↓
+Extract board ID
+↓
+UI verifies board
+
+Example:
+
+API creates card
+↓
+Verify API response
+↓
+Extract card ID
+↓
+UI verifies card
+
+Example:
+
+API deletes card
+↓
+Verify API response
+↓
+UI verifies card is absent
+
+============================================================
+TEST DATA
+=========
+
+Use unique test data where possible.
+
+For example, generated board/card names can include a timestamp.
+
+Example:
+
+"AI Playwright Test Board"
+
+or:
+
+"AI Playwright Test Board <timestamp>"
+
+Avoid collisions with previously created test data.
+
+Do not use random data that makes debugging difficult.
+
+Keep test data simple and readable.
+
+============================================================
+PYTEST FIXTURES
+===============
+
+Use Pytest fixtures where appropriate.
+
+Use the Playwright fixture provided by pytest-playwright.
+
+Example:
+
+def test_example(page):
+...
+
+For API operations, use the Playwright fixture and:
+
+playwright.request.new_context()
+
+Do not create a separate browser instance manually unless necessary.
+
+============================================================
+RESOURCE CLEANUP
+================
+
+Clean up test-created resources where appropriate.
+
+For example:
+
+1. Create test board.
+2. Create test card.
+3. Perform validations.
+4. Delete test card.
+5. Delete test board if required.
+
+Do not delete pre-existing user data.
+
+Only delete resources created by the test.
+
+============================================================
+ALLURE REPORTING
+================
+
+Use Allure decorators to make the generated report clear.
+
+Use:
+
+import allure
+
+Add meaningful test titles.
+
+Example:
+
+@allure.title("Create Trello board using API")
+
+Use appropriate Allure steps.
+
+Example:
+
+with allure.step("Create board using Trello API"):
+...
+
+with allure.step("Verify board in Trello UI"):
+...
+
+Use severity where appropriate.
+
+Example:
+
+@allure.severity(allure.severity_level.CRITICAL)
+
+Do not put passwords, API keys, tokens, or other secrets into Allure steps, titles, attachments, or output.
+
+============================================================
+ASSERTIONS
+==========
+
+Use clear Pytest assertions.
+
+Examples:
+
+assert response.ok
+
+assert response.status == 200
+
+assert board_id is not None
+
+assert card_id is not None
+
+For UI:
+
+assert page.get_by_text(board_name).is_visible()
+
+Use assertions that clearly explain what failed.
+
+Do not use unnecessary assertions.
+
+============================================================
+ERROR HANDLING
+==============
+
+Do not hide test failures.
+
+Allow Pytest assertions and Playwright errors to fail the test normally.
+
+Do not use broad exception handling that causes a failed test to appear successful.
+
+Do not write:
+
+try:
+...
+except:
+pass
+
+If an exception must be handled, handle it explicitly and make sure the test still fails when the expected operation cannot be completed.
+
+============================================================
+LOCATORS
+========
+
+Prefer reliable Playwright locators.
+
+Use:
+
+get_by_role()
+
+get_by_text()
+
+get_by_label()
+
+get_by_placeholder()
+
+Use CSS/XPath only when necessary.
+
+Do not use unnecessary hard-coded XPath expressions.
+
+Avoid brittle selectors where possible.
+
+Use Playwright's automatic waiting rather than unnecessary time.sleep() calls.
+
+============================================================
+WAITING
+=======
+
+Do not use arbitrary long waits such as:
+
+time.sleep(10)
+
+Prefer Playwright's automatic waiting and appropriate assertions.
+
+If a wait is genuinely required, keep it short and explain the reason in the test step.
+
+============================================================
+TEST INDEPENDENCE
+=================
+
+Tests should be as independent as reasonably possible.
+
+Do not rely on execution order unless the operation logically requires data created by an earlier step.
+
+When multiple operations depend on the same board/card, use fixtures or a clear setup flow to manage the test data.
+
+Do not assume that a board or card from a previous test always exists.
+
+============================================================
+FILE AND IMPORT RULES
+=====================
+
+The generated file is:
+
+tests/testcases.py
+
+Use imports such as:
+
+import json
+import time
+import allure
+
+from encryption import decrypt_value
+
+from playwright.sync_api import Playwright, Page, expect
+
+Do not create another credential/decryption file.
+
+Do not duplicate encryption logic.
+
+Do not create an additional Gemini client.
+
+============================================================
+SECURITY RULES
+==============
+
+Never:
+
+* hard-code passwords
+* hard-code API keys
+* hard-code API tokens
+* print credentials
+* expose credentials in assertions
+* expose credentials in Allure reports
+* save decrypted credentials to files
+* include credentials in screenshots
+* include credentials in error messages
+* commit `.env`
+* modify the encryption key
+
+Always load credentials from the existing JSON files and decrypt them at runtime.
+
+============================================================
+FINAL CODE REQUIREMENT
+======================
+
+Generate a complete, executable:
+
+tests/testcases.py
+
+The code must:
+
+1. Use Pytest.
+2. Use Playwright.
+3. Use Playwright UI automation.
+4. Use Playwright API request context for API testing.
+5. Load encrypted credentials from JSON.
+6. Decrypt credentials using encryption.py.
+7. Test valid login.
+8. Test invalid login.
+9. Create a board using the API.
+10. Verify the board using the UI.
+11. Create a card using the API.
+12. Verify the card using the UI.
+13. Delete the card using the API.
+14. Verify the card is deleted in the UI.
+15. Add card description/text using the API.
+16. Verify the description/text using the UI.
+17. Delete the description/text using the API.
+18. Verify the description/text is removed using the UI.
+19. Use Allure reporting.
+20. Clean up resources created by the tests where appropriate.
+21. Never expose credentials.
+22. Be simple and beginner-friendly.
+23. Work with the existing project structure.
+24. Output ONLY the Python code.

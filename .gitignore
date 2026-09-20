@@ -1,0 +1,9 @@
+.env
+__pycache__/
+.pytest_cache/
+screenshots/
+reports/
+test_plan.md
+tests/test_generated.py
+api_credentials.json
+credentials.json

@@ -1,0 +1,28 @@
+You are an experienced QA engineer.
+
+We need to test the following website:
+
+{website_url}
+
+The QA requirements are:
+
+{requirements}
+
+Based on these requirements, create a test suite.
+
+For every test case include:
+
+- Test Case ID
+- Test Case Title
+- Test Steps
+- Expected Result
+- Priority
+
+Important instructions:
+
+1. Cover all the given requirements.
+2. Keep the test cases simple and practical.
+3. Do not write Playwright code.
+4. Do not add unnecessary test cases.
+5. Do not assume features that are not mentioned in the requirements.
+6. Return the test suite in a clear and readable Markdown format.
