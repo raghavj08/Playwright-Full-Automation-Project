@@ -1,0 +1,99 @@
+{
+  "HomePage": {
+    "url": "https://automationintesting.online/",
+    "locators": {
+      "nav_brand_link": "page.get_by_role(\"link\", name=\"Shady Meadows B&B\").first",
+      "nav_rooms_link": "page.get_by_role(\"navigation\").get_by_role(\"link\", name=\"Rooms\")",
+      "nav_booking_link": "page.get_by_role(\"navigation\").get_by_role(\"link\", name=\"Booking\")",
+      "nav_amenities_link": "page.get_by_role(\"navigation\").get_by_role(\"link\", name=\"Amenities\")",
+      "nav_location_link": "page.get_by_role(\"navigation\").get_by_role(\"link\", name=\"Location\")",
+      "nav_contact_link": "page.get_by_role(\"navigation\").get_by_role(\"link\", name=\"Contact\")",
+      "nav_admin_link": "page.get_by_role(\"navigation\").get_by_role(\"link\", name=\"Admin\")",
+      "welcome_heading": "page.get_by_role(\"heading\", name=\"Welcome to Shady Meadows B&B\")",
+      "book_now_banner_link": "page.get_by_role(\"link\", name=\"Book Now\")",
+      "checkin_textbox": "page.get_by_role(\"textbox\").first",
+      "checkout_textbox": "page.get_by_role(\"textbox\").nth(1)",
+      "check_availability_button": "page.get_by_role(\"button\", name=\"Check Availability\")",
+      "room_single_book_link": "page.get_by_role(\"link\", name=\"Book now\").first",
+      "room_double_book_link": "page.get_by_role(\"link\", name=\"Book now\").nth(1)",
+      "room_suite_book_link": "page.get_by_role(\"link\", name=\"Book now\").nth(2)",
+      "contact_name_input": "page.get_by_role(\"textbox\", name=\"Name\")",
+      "contact_email_input": "page.get_by_role(\"textbox\", name=\"Email\")",
+      "contact_phone_input": "page.get_by_role(\"textbox\", name=\"Phone\")",
+      "contact_subject_input": "page.get_by_role(\"textbox\", name=\"Subject\")",
+      "contact_message_input": "page.locator(\"textarea\").or(page.get_by_role(\"textbox\").nth(4))",
+      "contact_submit_button": "page.get_by_role(\"button\", name=\"Submit\")",
+      "footer_cookie_policy_link": "page.get_by_role(\"link\", name=\"Cookie-Policy\")",
+      "footer_privacy_policy_link": "page.get_by_role(\"link\", name=\"Privacy-Policy\")",
+      "footer_admin_link": "page.get_by_role(\"link\", name=\"Admin panel\")"
+    }
+  },
+  "AdminPage": {
+    "url": "https://automationintesting.online/admin",
+    "locators": {
+      "front_page_link": "page.get_by_role(\"link\", name=\"Front Page\")",
+      "logout_button": "page.get_by_role(\"button\", name=\"Logout\")",
+      "username_input": "page.get_by_placeholder(\"Enter username\")",
+      "password_input": "page.get_by_role(\"textbox\", name=\"Password\")",
+      "login_button": "page.get_by_role(\"button\", name=\"Login\")",
+      "login_heading": "page.get_by_role(\"heading\", name=\"Login\")"
+    }
+  },
+  "AdminRoomsPage": {
+    "url": "https://automationintesting.online/admin/rooms",
+    "locators": {
+      "front_page_link": "page.get_by_role(\"link\", name=\"Front Page\")",
+      "logout_button": "page.get_by_role(\"button\", name=\"Logout\")",
+      "username_input": "page.get_by_placeholder(\"Enter username\")",
+      "password_input": "page.get_by_role(\"textbox\", name=\"Password\")",
+      "login_button": "page.get_by_role(\"button\", name=\"Login\")"
+    }
+  },
+  "Reservation1Page": {
+    "url": "https://automationintesting.online/reservation/1",
+    "locators": {
+      "brand_link": "page.get_by_role(\"link\", name=\"Shady Meadows B&B\").first",
+      "rooms_link": "page.get_by_role(\"navigation\").get_by_role(\"link\", name=\"Rooms\")",
+      "room_heading": "page.get_by_role(\"heading\", name=\"Single Room\")",
+      "similar_double_view_details": "page.get_by_role(\"link\", name=\"View Details\").first",
+      "similar_suite_view_details": "page.get_by_role(\"link\", name=\"View Details\").nth(1)",
+      "home_breadcrumb": "page.get_by_role(\"navigation\", name=\"breadcrumb\").get_by_role(\"link\", name=\"Home\")"
+    }
+  },
+  "Reservation2Page": {
+    "url": "https://automationintesting.online/reservation/2",
+    "locators": {
+      "brand_link": "page.get_by_role(\"link\", name=\"Shady Meadows B&B\").first",
+      "rooms_link": "page.get_by_role(\"navigation\").get_by_role(\"link\", name=\"Rooms\")",
+      "room_heading": "page.get_by_role(\"heading\", name=\"Double Room\")",
+      "similar_single_view_details": "page.get_by_role(\"link\", name=\"View Details\").first",
+      "similar_suite_view_details": "page.get_by_role(\"link\", name=\"View Details\").nth(1)"
+    }
+  },
+  "Reservation3Page": {
+    "url": "https://automationintesting.online/reservation/3",
+    "locators": {
+      "brand_link": "page.get_by_role(\"link\", name=\"Shady Meadows B&B\").first",
+      "rooms_link": "page.get_by_role(\"navigation\").get_by_role(\"link\", name=\"Rooms\")",
+      "room_heading": "page.get_by_role(\"heading\", name=\"Suite Room\")",
+      "similar_single_view_details": "page.get_by_role(\"link\", name=\"View Details\").first",
+      "similar_double_view_details": "page.get_by_role(\"link\", name=\"View Details\").nth(1)"
+    }
+  },
+  "CookiePage": {
+    "url": "https://automationintesting.online/cookie",
+    "locators": {
+      "cookie_policy_heading": "page.get_by_role(\"heading\", name=\"Cookie Policy\")",
+      "cloudflare_link": "page.get_by_role(\"link\", name=\"Cloudflare\")",
+      "google_analytics_link": "page.get_by_role(\"link\", name=\"Google Analytics\")",
+      "google_analytics_opt_out_link": "page.get_by_role(\"link\", name=\"Google Analytics Opt-Out\")"
+    }
+  },
+  "PrivacyPage": {
+    "url": "https://automationintesting.online/privacy",
+    "locators": {
+      "privacy_policy_heading": "page.get_by_role(\"heading\", name=\"Privacy Policy Notice\")",
+      "cookie_policy_link": "page.get_by_role(\"link\", name=\"Cookie-Policy\")"
+    }
+  }
+}

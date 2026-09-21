@@ -70,50 +70,59 @@ AI_Playwright_Simple/
 ├── requirements.txt
 ├── README.md
 │
+├── constants/
+│   └── constants.py
+│
+├── helper/
+│   ├── __init__.py
+│   └── mcp_code.py
+│
 ├── input/
 │   ├── requirements.txt
 │   ├── credentials.json
-│   └── api_credentials.json
+│   ├── api_credentials.json
+│   └── locator_data.json
 │
 ├── prompts/
-│   ├── test_generation_prompt.txt
-│   ├── code_generation_prompt.txt
-│   └── error_analysis_prompt.txt
+│   ├── ui_test_case_generation_prompt.txt
+│   ├── api_test_case_generation_prompt.txt
+│   ├── ui_code_generation_prompt.txt
+│   └── api_code_generation_prompt.txt
 │
 ├── tests/
 │   ├── conftest.py
-│   ├── test_plan.md
-│   └── testcases.py
-│
-├── allure-results/
-├── allure-report/
+│   ├── testcase.json
+│   └── testcase.py
 │
 ├── reports/
 │   ├── pytest_failure.txt
-│   └── error_analysis.md
+│   └── test_report.html
 │
-└── screenshots/
+└── utils/
+    ├── __init__.py
+    ├── encryption.py
+    ├── encrypt_credentials.py
+    └── generate_key.py
 ```
 
 ### Important Files
 
-| File / Folder                        | Purpose                                      |
-| ------------------------------------ | -------------------------------------------- |
-| `main.py`                            | Controls the complete AI automation workflow |
-| `input/requirements.txt`             | Contains QA requirements                     |
-| `input/credentials.json`             | Contains UI login credentials                |
-| `input/api_credentials.json`         | Contains API credentials                     |
-| `prompts/test_generation_prompt.txt` | Prompt used to generate the test plan        |
-| `prompts/code_generation_prompt.txt` | Prompt used to generate Playwright code      |
-| `prompts/error_analysis_prompt.txt`  | Prompt used to analyze failed tests          |
-| `tests/test_plan.md`                 | Generated test plan                          |
-| `tests/testcases.py`                 | Generated Playwright automation code         |
-| `tests/conftest.py`                  | Reusable Pytest/Playwright fixtures          |
-| `allure-results/`                    | Raw Allure test results                      |
-| `allure-report/`                     | Generated Allure HTML report                 |
-| `reports/pytest_failure.txt`         | Captured Pytest failure output               |
-| `reports/error_analysis.md`          | Gemini-generated error analysis              |
-| `screenshots/`                       | Screenshots captured during test execution   |
+| File / Folder | Purpose |
+| --- | --- |
+| `main.py` | Orchestrates test case & Playwright code generation, and pytest execution |
+| `helper/mcp_code.py` | Multi-page Playwright MCP website crawler and locator extractor |
+| `input/requirements.txt` | Software requirements for UI and REST API |
+| `input/credentials.json` | Encrypted UI login credentials |
+| `input/api_credentials.json` | Encrypted REST API credentials (key & token) |
+| `input/locator_data.json` | Structured multi-page locator dictionary extracted by MCP crawler |
+| `prompts/ui_test_case_generation_prompt.txt` | Prompt for generating UI test cases |
+| `prompts/api_test_case_generation_prompt.txt` | Prompt for generating REST API test cases |
+| `prompts/ui_code_generation_prompt.txt` | Prompt for generating Playwright browser UI automation |
+| `prompts/api_code_generation_prompt.txt` | Prompt for generating Playwright API automation |
+| `tests/testcase.json` | Generated test cases based on selected testing mode |
+| `tests/testcase.py` | Generated executable Playwright test script |
+| `tests/conftest.py` | Pytest fixtures and failure screenshot hooks |
+| `reports/test_report.html` | Generated self-contained HTML test execution report |
 
 ---
 

@@ -3,14 +3,21 @@ import json
 import subprocess
 import sys
 import asyncio
-import re
+import time
+from urllib.parse import urlparse, urljoin
 
 from dotenv import load_dotenv
 from google import genai
 
-from mcp import Client, StdioServerParameters
+from constants.constants import MODEL, BASE_URL, API_BASE_URL
+from helper.mcp_code import inspect_website_with_mcp
 
-from constants.constants import MODEL, BASE_URL
+# Ensure UTF-8 output on Windows consoles to prevent UnicodeEncodeError
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 
 # ============================================================
@@ -27,8 +34,15 @@ if not GEMINI_API_KEY:
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-os.makedirs("tests", exist_ok=True)
-os.makedirs("reports", exist_ok=True)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TESTS_DIR = os.path.join(BASE_DIR, "tests")
+REPORTS_DIR = os.path.join(BASE_DIR, "reports")
+INPUT_DIR = os.path.join(BASE_DIR, "input")
+PROMPTS_DIR = os.path.join(BASE_DIR, "prompts")
+
+os.makedirs(TESTS_DIR, exist_ok=True)
+os.makedirs(REPORTS_DIR, exist_ok=True)
+os.makedirs(INPUT_DIR, exist_ok=True)
 
 
 # ============================================================
@@ -36,33 +50,97 @@ os.makedirs("reports", exist_ok=True)
 # ============================================================
 
 def read_file(file_path):
-
+    if not os.path.isabs(file_path):
+        file_path = os.path.join(BASE_DIR, file_path)
     with open(file_path, "r", encoding="utf-8") as file:
         return file.read()
 
 
+def sanitize_playwright_python_code(code_str):
+    """Sanitizes generated Playwright Python code by replacing JavaScript/TypeScript API names with Python equivalents."""
+    if not isinstance(code_str, str):
+        return code_str
+    import re
+    replacements = [
+        (r"\.getByRole\(", ".get_by_role("),
+        (r"\.getByText\(", ".get_by_text("),
+        (r"\.getByLabel\(", ".get_by_label("),
+        (r"\.getByPlaceholder\(", ".get_by_placeholder("),
+        (r"\.getByTestId\(", ".get_by_test_id("),
+        (r"\.getByTitle\(", ".get_by_title("),
+        (r"\.getByAltText\(", ".get_by_alt_text("),
+        (r"hasText\s*[:=]", "has_text="),
+        (r"hasNotText\s*[:=]", "has_not_text="),
+    ]
+    for pattern, rep in replacements:
+        code_str = re.sub(pattern, rep, code_str)
+    return code_str
+
+
+def call_gemini_with_retry(model, contents, max_retries=5, initial_delay=3):
+    """Calls Gemini API with exponential backoff retry and fallback for transient 503/429/quota errors."""
+    delay = initial_delay
+    fallback_pool = ["gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"]
+    model_queue = [model] + [m for m in fallback_pool if m != model]
+    model_idx = 0
+
+    for attempt in range(1, max_retries + 1):
+        current_model = model_queue[model_idx % len(model_queue)]
+        try:
+            return client.models.generate_content(
+                model=current_model,
+                contents=contents
+            )
+        except Exception as e:
+            err_msg = str(e)
+            if "503" in err_msg or "429" in err_msg or "UNAVAILABLE" in err_msg or "404" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
+                model_idx += 1
+                next_model = model_queue[model_idx % len(model_queue)]
+                print(f"[Gemini] Issue with '{current_model}' ({err_msg[:60]}...). Switching to '{next_model}'...")
+                if attempt < max_retries:
+                    print(f"[Gemini] Retrying in {delay}s (attempt {attempt}/{max_retries})...")
+                    time.sleep(delay)
+                    delay = min(delay * 2, 8)
+                    continue
+            raise e
+
+
+
 # ============================================================
-# GEMINI - GENERATE TEST CASES
+# GEMINI - GENERATE TEST CASES (UI vs API)
 # ============================================================
 
-def generate_test_cases():
+def generate_test_cases(testing_type="UI", target_url=None):
+    """
+    Generates test cases based on testing_type ('UI' or 'API').
+    Reads requirements from input/requirements.txt and uses the appropriate prompt template.
+    Saves generated test cases to tests/testcase.json and tests/test_cases.json.
+    """
+    requirements = read_file("input/requirements.txt")
 
-    requirements = read_file(
-        "input/requirements.txt"
-    )
+    if testing_type.upper() == "API":
+        prompt_file = "prompts/api_test_case_generation_prompt.txt"
+        target_url = target_url or API_BASE_URL
+        print("\n[Mode: API Testing] Using prompts/api_test_case_generation_prompt.txt")
+    else:
+        prompt_file = "prompts/ui_test_case_generation_prompt.txt"
+        target_url = target_url or BASE_URL
+        print("\n[Mode: UI Testing] Using prompts/ui_test_case_generation_prompt.txt")
 
-    prompt = read_file(
-        "prompts/test_case_generation_prompt.txt"
-    )
+    prompt = read_file(prompt_file)
+    prompt = prompt.replace("{{REQUIREMENTS}}", requirements)
+    if "{{TARGET_URL}}" in prompt:
+        prompt = prompt.replace("{{TARGET_URL}}", target_url)
 
-    prompt = prompt.replace(
-        "{{REQUIREMENTS}}",
-        requirements
-    )
+    if testing_type.upper() == "API":
+        prompt += f"\n\nNOTE: The target REST API base URL is: {target_url}. Generate REST API test cases for this API.\n"
+    else:
+        if target_url != BASE_URL:
+            prompt += f"\n\nNOTE: The target website URL to test is: {target_url}. Generate UI test cases appropriate for this website.\n"
 
-    print("\nGenerating test cases using Gemini...\n")
+    print(f"\nGenerating {testing_type.upper()} test cases using Gemini...\n")
 
-    response = client.models.generate_content(
+    response = call_gemini_with_retry(
         model=MODEL,
         contents=prompt
     )
@@ -72,7 +150,10 @@ def generate_test_cases():
     # Remove markdown if Gemini accidentally adds it
     if generated_json.startswith("```json"):
         generated_json = generated_json[7:]
-
+        if generated_json.endswith("```"):
+            generated_json = generated_json[:-3]
+    elif generated_json.startswith("```"):
+        generated_json = generated_json[3:]
         if generated_json.endswith("```"):
             generated_json = generated_json[:-3]
 
@@ -80,343 +161,98 @@ def generate_test_cases():
 
     try:
         test_cases = json.loads(generated_json)
-
     except json.JSONDecodeError as error:
-
         print("Gemini generated invalid JSON.")
         print(error)
-
+        print("Raw response:")
+        print(generated_json[:500])
         sys.exit(1)
 
-    with open(
-        "tests/test_cases.json",
-        "w",
-        encoding="utf-8"
-    ) as file:
+    # Save to testcase.json
+    testcase_json_path = os.path.join(TESTS_DIR, "testcase.json")
 
-        json.dump(
-            test_cases,
-            file,
-            indent=2
-        )
+    with open(testcase_json_path, "w", encoding="utf-8") as file:
+        json.dump(test_cases, file, indent=2)
 
-    print(
-        f"Generated {len(test_cases['test_cases'])} test cases."
-    )
+    count = len(test_cases.get("test_cases", []))
+    print(f"Generated {count} {testing_type.upper()} test cases.")
+    print(f"Saved to:\n- {testcase_json_path}")
 
     return test_cases
 
 
 # ============================================================
-# PLAYWRIGHT MCP
-# ============================================================
-
-def extract_action_target(action):
-    """Extract quoted string or keyword target from test action."""
-    quoted = re.findall(r"['\"]([^'\"]+)['\"]", action)
-    if quoted:
-        return quoted[0]
-
-    lower = action.lower()
-    if "logo" in lower:
-        return "Atlassian Trello"
-    elif "username" in lower or "email" in lower:
-        return "Email"
-    elif "password" in lower:
-        return "Password"
-    elif "continue" in lower:
-        return "Continue"
-    elif "board title" in lower:
-        return "Board title"
-    elif "create board" in lower:
-        return "Create board"
-    elif "create" in lower:
-        return "Create"
-    elif "description" in lower:
-        return "Description"
-    elif "archive" in lower:
-        return "Archive"
-    elif "delete" in lower:
-        return "Delete"
-    elif "save" in lower:
-        return "Save"
-    elif "list" in lower:
-        return "Add a list"
-    elif "card" in lower:
-        return "Add a card"
-    return None
-
-
-def derive_locator(action, target, snapshot_match, page_context="homepage"):
-    """Derive clean, robust Playwright locators based on MCP match or semantic action."""
-    action_lower = action.lower()
-    target_lower = (target or "").lower()
-
-    # 1. Homepage elements
-    if "logo" in action_lower or target_lower == "atlassian trello":
-        return 'page.get_by_role("img", name="Atlassian Trello").or_(page.get_by_label("Trello")).first'
-    if (target_lower == "log in" and page_context == "homepage") or ("homepage" in action_lower and "log in" in action_lower):
-        return 'page.get_by_role("link", name="Log in").first'
-    if target_lower == "get trello for free":
-        return 'page.get_by_role("link", name="Get Trello for free").first'
-    if target_lower == "features":
-        return 'page.get_by_role("button", name="Features").first'
-    if target_lower == "plans":
-        return 'page.get_by_role("button", name="Plans").first'
-
-    # 2. Login elements
-    if ("username" in action_lower or "email" in action_lower) and "continue" in action_lower:
-        return 'email_input = page.get_by_role("textbox", name="Email").or_(page.get_by_placeholder("Enter your email")).or_(page.get_by_test_id("username")).first; continue_btn = page.get_by_role("button", name="Continue").or_(page.get_by_test_id("login-submit-idf-testid")).first'
-    if "password" in action_lower and ("log in" in action_lower or "submit" in action_lower):
-        return 'password_input = page.get_by_role("textbox", name="Password").or_(page.get_by_placeholder("Enter password")).or_(page.get_by_test_id("password")).first; login_btn = page.get_by_role("button", name="Log in").or_(page.get_by_test_id("login-submit")).first'
-    if "username" in action_lower or "email" in action_lower or target_lower in ["email", "username"]:
-        return 'page.get_by_role("textbox", name="Email").or_(page.get_by_placeholder("Enter your email")).or_(page.get_by_test_id("username")).first'
-    if target_lower == "continue" or "continue" in action_lower:
-        return 'page.get_by_role("button", name="Continue").or_(page.get_by_test_id("login-submit-idf-testid")).first'
-    if "password" in action_lower or target_lower == "password":
-        return 'page.get_by_role("textbox", name="Password").or_(page.get_by_placeholder("Enter password")).or_(page.get_by_test_id("password")).first'
-    if target_lower == "log in" and ("submit" in action_lower or page_context == "login"):
-        return 'page.get_by_role("button", name="Log in").or_(page.get_by_test_id("login-submit")).first'
-    if "blank" in action_lower or "empty" in action_lower or "validation" in action_lower or "warning" in action_lower:
-        return 'page.get_by_text("Enter an email address").first'
-
-    # 3. Board & Card elements
-    if "create" in action_lower and ("dropdown" in action_lower or "button" in action_lower):
-        return 'page.get_by_role("button", name="Create").or_(page.get_by_test_id("header-create-menu-button")).first'
-    if "create board" in action_lower:
-        return 'page.get_by_role("menuitem", name="Create board").or_(page.get_by_test_id("header-create-board-button")).first'
-    if "board title" in action_lower:
-        return 'page.get_by_role("textbox", name="Board title").or_(page.get_by_test_id("create-board-title-input")).first'
-    if "board header" in action_lower or "displays the name" in action_lower:
-        return 'page.get_by_role("heading", name=re.compile(r"QA UI Test Board|Test Board", re.IGNORECASE)).first'
-    if "add a list" in action_lower or "list" in action_lower:
-        return 'page.get_by_role("button", name="Add a list").or_(page.get_by_placeholder("Enter list name...")).first'
-    if "add a card" in action_lower:
-        return 'page.get_by_role("button", name="Add a card").or_(page.get_by_test_id("list-add-card-button")).first'
-    if "card title" in action_lower or ("type" in action_lower and "card" in action_lower):
-        return 'page.get_by_role("textbox", name="Enter a title for this card...").or_(page.get_by_placeholder("Enter a title for this card...")).first'
-    if "add card" in action_lower:
-        return 'page.get_by_role("button", name="Add card").or_(page.get_by_test_id("list-card-composer-add-card-button")).first'
-    if "card labeled" in action_lower or "first card" in action_lower:
-        return 'page.get_by_role("link", name=re.compile(r"QA UI Test Card|Test Card", re.IGNORECASE)).first'
-    if "archive" in action_lower:
-        return 'page.get_by_role("button", name="Archive").first'
-    if "delete" in action_lower:
-        return 'page.get_by_role("button", name="Delete").first'
-    if "description" in action_lower:
-        return 'page.get_by_role("textbox", name="Description").or_(page.get_by_placeholder("Add a more detailed description...")).first'
-    if "save" in action_lower:
-        return 'page.get_by_role("button", name="Save").first'
-
-    # Fallback to MCP snapshot match if parsed role and name
-    if snapshot_match and not snapshot_match.startswith("### Error"):
-        match = re.search(r'-\s+(link|button|textbox|heading|img|checkbox)\s+"([^"]+)"', snapshot_match)
-        if match:
-            role, name = match.group(1), match.group(2)
-            return f'page.get_by_role("{role}", name="{name}").first'
-
-    if target:
-        return f'page.get_by_text("{target}").first'
-    return 'page'
-
-
-async def inspect_website_with_mcp(test_cases):
-
-    print("\nStarting Playwright MCP...\n")
-
-    server_parameters = StdioServerParameters(
-        command="npx",
-        args=[
-            "@playwright/mcp@latest",
-            "--caps=testing"
-        ]
-    )
-
-    async with Client(server_parameters) as mcp_client:
-
-        # ----------------------------------------------------
-        # Show available tools
-        # ----------------------------------------------------
-
-        tools = await mcp_client.list_tools()
-
-        print("Available MCP tools:")
-        for tool in tools.tools:
-            print(f" - {tool.name}")
-
-        # Cache of MCP find results
-        mcp_cache = {}
-
-        async def mcp_find(term):
-            if not term:
-                return ""
-            if term in mcp_cache:
-                return mcp_cache[term]
-            try:
-                # browser_find expects 'text' or 'regex'
-                res = await mcp_client.call_tool("browser_find", {"text": term})
-                text = "".join(c.text for c in res.content if hasattr(c, "text"))
-                mcp_cache[term] = text
-                return text
-            except Exception as e:
-                return f"Error: {e}"
-
-        # ----------------------------------------------------
-        # 1. Inspect Homepage
-        # ----------------------------------------------------
-        print(f"\n[MCP] Opening Homepage: {BASE_URL}...\n")
-        await mcp_client.call_tool("browser_navigate", {"url": BASE_URL})
-
-        snapshot_result = await mcp_client.call_tool("browser_snapshot", {})
-        homepage_text = "".join(c.text for c in snapshot_result.content if hasattr(c, "text"))
-        print("[MCP] Homepage snapshot obtained.")
-
-        # Warm cache for Homepage elements
-        for term in ["Log in", "Get Trello for free", "Features", "Plans", "Atlassian Trello"]:
-            match = await mcp_find(term)
-            status = "Found" if "Found" in match else "Checked"
-            print(f"[MCP] Inspected '{term}' on Homepage: {status}")
-
-        # ----------------------------------------------------
-        # 2. Inspect Login Page
-        # ----------------------------------------------------
-        login_url = "https://id.atlassian.com/login?application=trello"
-        print(f"\n[MCP] Opening Login Page: {login_url}...\n")
-        await mcp_client.call_tool("browser_navigate", {"url": login_url})
-
-        login_snapshot_result = await mcp_client.call_tool("browser_snapshot", {})
-        login_text = "".join(c.text for c in login_snapshot_result.content if hasattr(c, "text"))
-        print("[MCP] Login page snapshot obtained.")
-
-        # Warm cache for Login elements
-        for term in ["Email", "Continue", "Remember me"]:
-            match = await mcp_find(term)
-            status = "Found" if "Found" in match else "Checked"
-            print(f"[MCP] Inspected '{term}' on Login page: {status}")
-
-        # ----------------------------------------------------
-        # 3. Generate locator information for test cases
-        # ----------------------------------------------------
-        locator_data = {
-            "website": BASE_URL,
-            "login_url": login_url,
-            "test_cases": []
-        }
-
-        for test_case in test_cases.get("test_cases", []):
-            test_case_id = test_case["id"]
-            tc_type = test_case.get("type", "UI")
-            print(f"\nInspecting {test_case_id} ({tc_type})...")
-
-            if tc_type == "API":
-                locator_data["test_cases"].append({
-                    "test_case_id": test_case_id,
-                    "type": "API",
-                    "locators_needed": False,
-                    "notes": "Programmatic REST API test - uses playwright.request APIRequestContext",
-                    "elements": []
-                })
-                continue
-
-            if test_case_id == "TC-001":
-                page_context = "homepage"
-                page_url = BASE_URL
-            elif test_case_id in ["TC-002", "TC-003", "TC-004", "TC-005", "TC-006", "TC-007"]:
-                page_context = "login"
-                page_url = login_url
-            else:
-                page_context = "board"
-                page_url = f"{BASE_URL}/b/..."
-
-            elements = []
-            for step in test_case.get("steps", []):
-                action = step["action"]
-                target = extract_action_target(action)
-                snapshot_snippet = mcp_cache.get(target, "") if target else ""
-                locator_expr = derive_locator(action, target, snapshot_snippet, page_context=page_context)
-
-                elements.append({
-                    "step_number": step.get("step_number"),
-                    "action": action,
-                    "target": target,
-                    "locator": locator_expr,
-                    "snapshot_match": snapshot_snippet[:150] if snapshot_snippet else "MCP live inspection verified",
-                    "mcp_verified": True
-                })
-
-            locator_data["test_cases"].append({
-                "test_case_id": test_case_id,
-                "type": "UI",
-                "page_context": page_context,
-                "page_url": page_url,
-                "elements": elements
-            })
-
-        # ----------------------------------------------------
-        # Save verified locator data
-        # ----------------------------------------------------
-        with open("tests/locator_data.json", "w", encoding="utf-8") as file:
-            json.dump(locator_data, file, indent=2)
-
-        print("\nMCP locator information saved to: tests/locator_data.json")
-        return locator_data
-
-
-# ============================================================
-# GEMINI - GENERATE PLAYWRIGHT CODE
+# GEMINI - GENERATE PLAYWRIGHT CODE (UI vs API)
 # ============================================================
 
 def generate_playwright_code(
     test_cases,
-    locator_data
+    locator_data=None,
+    pom_summary=None,
+    testing_type="UI",
+    target_url=None
 ):
-
-    prompt = read_file(
-        "prompts/code_generation_prompt.txt"
-    )
-
-    prompt += """
+    """
+    Generates Playwright test automation code in tests/testcase.py.
+    Uses prompts/ui_code_generation_prompt.txt for UI tests,
+    and prompts/api_code_generation_prompt.txt for API tests.
+    """
+    if testing_type.upper() == "API":
+        prompt_file = "prompts/api_code_generation_prompt.txt"
+        target_url = target_url or API_BASE_URL
+        prompt = read_file(prompt_file)
+        prompt += f"""
 
 ==================================================
-APPROVED TEST CASES
+APPROVED REST API TEST CASES
 ==================================================
 
+{json.dumps(test_cases, indent=2)}
+
+==================================================
+API BASE URL
+==================================================
+
+{target_url}
+
+Generate the Playwright API automation (using APIRequestContext) now.
 """
+        print("\nGenerating Playwright API automation code using Gemini...\n")
+    else:
+        prompt_file = "prompts/ui_code_generation_prompt.txt"
+        target_url = target_url or BASE_URL
+        prompt = read_file(prompt_file)
 
-    prompt += json.dumps(
-        test_cases,
-        indent=2
-    )
+        if "{{TARGET_URL}}" in prompt:
+            prompt = prompt.replace("{{TARGET_URL}}", target_url)
+        if "{{POM_ARCHITECTURE}}" in prompt:
+            prompt = prompt.replace("{{POM_ARCHITECTURE}}", pom_summary or "Page Objects generated in pages/ package")
 
-    prompt += """
+        prompt += f"""
 
 ==================================================
-PLAYWRIGHT MCP LOCATOR DATA
+APPROVED UI TEST CASES
 ==================================================
 
+{json.dumps(test_cases, indent=2)}
+
+==================================================
+PLAYWRIGHT MCP LOCATOR DATA (DICTIONARY)
+==================================================
+
+{json.dumps(locator_data or {}, indent=2)}
+
+==================================================
+TARGET WEBSITE
+==================================================
+
+{target_url}
+
+Generate the Playwright UI automation now.
 """
+        print("\nGenerating Playwright UI automation code using Gemini...\n")
 
-    prompt += json.dumps(
-        locator_data,
-        indent=2
-    )
-
-    prompt += f"""
-
-==================================================
-WEBSITE
-==================================================
-
-{BASE_URL}
-
-Generate the Playwright automation now.
-"""
-
-    print(
-        "\nGenerating Playwright code using Gemini...\n"
-    )
-
-    response = client.models.generate_content(
+    response = call_gemini_with_retry(
         model=MODEL,
         contents=prompt
     )
@@ -424,87 +260,167 @@ Generate the Playwright automation now.
     code = response.text.strip()
 
     if code.startswith("```python"):
-
         code = code[len("```python"):]
-
         if code.endswith("```"):
             code = code[:-3]
-
     elif code.startswith("```"):
-
         code = code[3:]
-
         if code.endswith("```"):
             code = code[:-3]
 
-    code = code.strip()
+    code = sanitize_playwright_python_code(code.strip())
 
-    with open(
-        "tests/testcases.py",
-        "w",
-        encoding="utf-8"
-    ) as file:
-
+    testcase_path = os.path.join(TESTS_DIR, "testcase.py")
+    with open(testcase_path, "w", encoding="utf-8") as file:
         file.write(code)
 
-    print(
-        "\nPlaywright script generated:"
-    )
-
-    print(
-        "tests/testcases.py"
-    )
+    print(f"\nPlaywright {testing_type.upper()} script generated:\n- {testcase_path}\n")
+    return testcase_path
 
 
 # ============================================================
-# PYTEST
+# PYTEST RUNNER & AUTONOMOUS SELF-HEALING LOOP
 # ============================================================
 
-def run_tests():
+def heal_test_code_with_gemini(failure_output, current_code, testing_type="UI", pom_summary=None):
+    """
+    Invokes Gemini to interpret pytest failure details and repair tests/testcase.py.
+    """
+    if not pom_summary:
+        pom_summary_path = os.path.join(INPUT_DIR, "pom_summary.txt")
+        if os.path.exists(pom_summary_path):
+            try:
+                with open(pom_summary_path, "r", encoding="utf-8") as f:
+                    pom_summary = f.read()
+            except Exception:
+                pass
 
-    print("\nRunning pytest...\n")
+    try:
+        prompt_template = read_file("prompts/self_healing_prompt.txt")
+    except Exception as e:
+        print(f"[Auto-Healer] Notice: Could not read prompts/self_healing_prompt.txt ({e}). Using default healing prompt.")
+        prompt_template = """You are an expert Python Playwright QA engineer specializing in automated test self-healing.
+A pytest test suite has failed. Analyze failure tracebacks and error logs, fix root causes (strict mode, text mismatches, missing POM properties), and output complete executable code for tests/testcase.py.
+{{POM_ARCHITECTURE}}
+Return ONLY valid Python code."""
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "pytest",
-            "tests/testcases.py",
-            "--html=reports/test_report.html",
-            "--self-contained-html"
-        ],
-        capture_output=True,
-        text=True
+    if "{{POM_ARCHITECTURE}}" in prompt_template:
+        prompt_template = prompt_template.replace("{{POM_ARCHITECTURE}}", pom_summary or "Page Objects in pages/ package")
+
+    prompt = f"""{prompt_template}
+
+==================================================
+TESTING TYPE
+==================================================
+{testing_type}
+
+==================================================
+PYTEST FAILURE OUTPUT & TRACEBACKS
+==================================================
+{failure_output}
+
+==================================================
+CURRENT tests/testcase.py CODE
+==================================================
+{current_code}
+
+Diagnose and repair all failures now. Return ONLY the complete, fixed Python code for tests/testcase.py.
+"""
+    print(f"\n[Auto-Healer] Sending failure diagnostics to Gemini for repair...")
+    response = call_gemini_with_retry(
+        model=MODEL,
+        contents=prompt
     )
 
-    print(result.stdout)
+    repaired_code = response.text.strip()
+    if repaired_code.startswith("```python"):
+        repaired_code = repaired_code[len("```python"):]
+        if repaired_code.endswith("```"):
+            repaired_code = repaired_code[:-3]
+    repaired_code = sanitize_playwright_python_code(repaired_code.strip())
 
-    if result.stderr:
-        print(result.stderr)
+    return repaired_code
 
-    if result.returncode == 0:
 
-        print("\nAll tests passed.")
+def run_tests(testing_type="UI", max_healing_attempts=3, pom_summary=None):
+    """
+    Executes pytest against the generated test script.
+    If tests fail, automatically triggers the LLM to interpret failures,
+    edit tests/testcase.py, and rerun until all tests pass or max attempts reached.
+    """
+    testcase_path = os.path.join(TESTS_DIR, "testcase.py")
+    report_html = os.path.join(REPORTS_DIR, "test_report.html")
+    failure_txt = os.path.join(REPORTS_DIR, "pytest_failure.txt")
 
-    else:
+    for attempt in range(1, max_healing_attempts + 2):
+        print("\n" + "=" * 50)
+        if attempt == 1:
+            print("RUNNING PYTEST TEST SUITE")
+        else:
+            print(f"RE-RUNNING PYTEST AFTER SELF-HEALING (Attempt {attempt - 1} of {max_healing_attempts})")
+        print("=" * 50 + "\n")
 
-        print("\nTests failed.")
-
-        with open(
-            "reports/pytest_failure.txt",
-            "w",
-            encoding="utf-8"
-        ) as file:
-
-            file.write(result.stdout)
-
-            file.write("\n\n")
-
-            file.write(result.stderr)
-
-        print(
-            "Failure saved to reports/pytest_failure.txt"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                testcase_path,
+                f"--html={report_html}",
+                "--self-contained-html"
+            ],
+            cwd=BASE_DIR,
+            capture_output=True,
+            text=True
         )
+
+        print(result.stdout)
+        if result.stderr:
+            print(result.stderr)
+
+        if result.returncode == 0:
+            print("\n" + "=" * 50)
+            print("SUCCESS: ALL TESTS PASSED!")
+            print(f"Report: {report_html}")
+            print("=" * 50 + "\n")
+            if os.path.exists(failure_txt):
+                try:
+                    os.remove(failure_txt)
+                except Exception:
+                    pass
+            return True
+
+        # Tests failed
+        print(f"\nTests finished with failures (exit code {result.returncode}).")
+        with open(failure_txt, "w", encoding="utf-8") as file:
+            file.write(result.stdout)
+            file.write("\n\n")
+            file.write(result.stderr)
+        print(f"Failure details saved to {failure_txt}")
+
+        if attempt <= max_healing_attempts:
+            print(f"\n[Auto-Healer] Triggering Gemini to interpret failures and auto-heal test cases (Healing attempt {attempt}/{max_healing_attempts})...")
+            with open(testcase_path, "r", encoding="utf-8") as file:
+                current_code = file.read()
+
+            failure_output = result.stdout + "\n" + result.stderr
+            repaired_code = heal_test_code_with_gemini(
+                failure_output=failure_output,
+                current_code=current_code,
+                testing_type=testing_type,
+                pom_summary=pom_summary
+            )
+
+            if repaired_code:
+                with open(testcase_path, "w", encoding="utf-8") as file:
+                    file.write(repaired_code)
+                print(f"[Auto-Healer] tests/testcase.py updated with healed code. Re-running tests...\n")
+            else:
+                print("[Auto-Healer] Failed to receive repaired code from LLM. Aborting retry loop.")
+                break
+        else:
+            print(f"\n[Auto-Healer] Max healing attempts ({max_healing_attempts}) reached. Tests still failing.")
+            return False
 
 
 # ============================================================
@@ -512,49 +428,109 @@ def run_tests():
 # ============================================================
 
 def main():
+    # 0. Detect CLI arguments for testing type and target URL
+    testing_type = None
+    target_url = None
 
-    # 1. Requirements → Test cases
-    test_cases = generate_test_cases()
+    for arg in sys.argv[1:]:
+        if arg.lower() in ["--ui", "-ui", "ui"]:
+            testing_type = "UI"
+        elif arg.lower() in ["--api", "-api", "api"]:
+            testing_type = "API"
+        elif arg.lower().startswith("--type="):
+            t = arg.split("=", 1)[1].strip().upper()
+            if t in ["UI", "API"]:
+                testing_type = t
+        elif arg.startswith("http://") or arg.startswith("https://"):
+            target_url = arg
+        elif arg.startswith("--url="):
+            target_url = arg.split("=", 1)[1]
+
+    # Prompt for testing type if not provided via CLI
+    if not testing_type:
+        print("\n" + "=" * 50)
+        print("SELECT TESTING TYPE")
+        print("=" * 50)
+        print("1. UI Testing  (Playwright Web Browser automation)")
+        print("2. API Testing (Playwright REST APIRequestContext)")
+        print("=" * 50)
+        try:
+            choice = input("\nEnter choice [1/2] (default: 1 - UI): ").strip()
+            if choice in ["2", "api", "API"]:
+                testing_type = "API"
+            else:
+                testing_type = "UI"
+        except (EOFError, KeyboardInterrupt):
+            testing_type = "UI"
+
+    # Determine default target URL based on selected testing type
+    default_url = API_BASE_URL if testing_type == "API" else BASE_URL
+
+    if not target_url:
+        try:
+            prompt_label = "API Base URL" if testing_type == "API" else "Website URL"
+            user_input_url = input(f"\nEnter {prompt_label} [Press Enter for default '{default_url}']: ").strip()
+            if user_input_url:
+                target_url = user_input_url
+            else:
+                target_url = default_url
+        except (EOFError, KeyboardInterrupt):
+            target_url = default_url
+
+    print("\n" + "=" * 50)
+    print(f"TESTING MODE : {testing_type}")
+    print(f"TARGET URL   : {target_url}")
+    print("=" * 50)
+
+    # 1. Requirements -> Test cases (UI or API)
+    test_cases = generate_test_cases(testing_type=testing_type, target_url=target_url)
 
     # 2. QA approval
-    print("\n====================================")
-    print("QA APPROVAL")
-    print("====================================")
+    print("\n" + "=" * 50)
+    print(f"QA APPROVAL ({testing_type} TEST CASES)")
+    print("=" * 50)
+    print(json.dumps(test_cases, indent=2))
 
-    print(
-        json.dumps(
-            test_cases,
-            indent=2
-        )
-    )
-
-    approval = input(
-        "\nApprove these test cases? (yes/no): "
-    ).strip().lower()
+    try:
+        approval = input("\nApprove these test cases? (yes/no): ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        approval = "no"
 
     if approval not in ["yes", "y"]:
-
-        print(
-            "\nTest cases rejected."
-        )
-
+        print("\nTest cases rejected. Exiting.")
         return
 
-    # 3. Test cases → MCP → locator information
-    locator_data = asyncio.run(
-        inspect_website_with_mcp(
-            test_cases
+    # 3. Handle Locator Data & Dynamic POM Synthesis (MCP Crawl for UI, Skipped for API)
+    locator_data = None
+    pom_summary = None
+    if testing_type == "UI":
+        print("\n" + "=" * 50)
+        print("STARTING PLAYWRIGHT MCP INSPECTION & RUNTIME POM SYNTHESIS (UI)")
+        print("=" * 50)
+        locator_data, pom_summary = asyncio.run(
+            inspect_website_with_mcp(
+                test_cases,
+                target_url=target_url,
+                client=client
+            )
         )
-    )
+    else:
+        print("\n" + "=" * 50)
+        print("SKIPPING MCP INSPECTION (API MODE)")
+        print("REST API tests interact with endpoints directly via APIRequestContext.")
+        print("=" * 50)
 
-    # 4. Test cases + MCP data → Playwright code
+    # 4. Test cases (+ MCP Locator Data & Runtime POMs for UI) -> Playwright Code
     generate_playwright_code(
-        test_cases,
-        locator_data
+        test_cases=test_cases,
+        locator_data=locator_data,
+        pom_summary=pom_summary,
+        testing_type=testing_type,
+        target_url=target_url
     )
 
-    # 5. Run pytest
-    run_tests()
+    # 5. Run pytest with autonomous self-healing
+    run_tests(testing_type=testing_type, pom_summary=pom_summary)
 
 
 if __name__ == "__main__":

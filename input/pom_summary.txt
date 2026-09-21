@@ -1,0 +1,34 @@
+### Available Page Objects
+
+- `BasePage(page)`
+  - Methods: `navigate_to(url)`, `scroll_to_bottom()`, `get_title()`, `get_url()`
+
+- `HomePage(page)`
+  - URL: `https://automationintesting.online/`
+  - Locators: `nav_brand_link`, `nav_rooms_link`, `nav_booking_link`, `nav_amenities_link`, `nav_location_link`, `nav_contact_link`, `nav_admin_link`, `welcome_heading`, `book_now_banner_link`, `checkin_textbox`, `checkout_textbox`, `check_availability_button`, `room_single_book_link`, `room_double_book_link`, `room_suite_book_link`, `contact_name_input`, `contact_email_input`, `contact_phone_input`, `contact_subject_input`, `contact_message_input`, `contact_submit_button`, `footer_cookie_policy_link`, `footer_privacy_policy_link`
+  - Methods: `navigate()`, `fill_contact_form(name, email, phone, subject, message)`, `submit_contact_form()`, `click_book_now_single()`
+
+- `AdminPage(page)`
+  - URL: `https://automationintesting.online/admin`
+  - Locators: `front_page_link`, `logout_button`, `username_input`, `password_input`, `login_button`, `login_heading`
+  - Methods: `navigate()`, `login(username, password)`, `logout()`
+
+- `AdminRoomsPage(page)`
+  - URL: `https://automationintesting.online/admin/rooms`
+  - Locators: `front_page_link`, `logout_button`
+  - Methods: `navigate()`, `logout()`
+
+- `ReservationPage(page, room_id)`
+  - URL: `https://automationintesting.online/reservation/{room_id}`
+  - Locators: `brand_link`, `rooms_link`, `room_heading`, `home_breadcrumb`
+  - Methods: `navigate()`
+
+- `CookiePage(page)`
+  - URL: `https://automationintesting.online/cookie`
+  - Locators: `cookie_policy_heading`, `cloudflare_link`, `google_analytics_link`, `google_analytics_opt_out_link`
+  - Methods: `navigate()`
+
+- `PrivacyPage(page)`
+  - URL: `https://automationintesting.online/privacy`
+  - Locators: `privacy_policy_heading`, `cookie_policy_link`
+  - Methods: `navigate()`

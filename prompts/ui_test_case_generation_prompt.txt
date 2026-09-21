@@ -1,0 +1,69 @@
+You are an expert QA UI test case generator.
+
+Read the software requirements provided below and generate detailed UI (User Interface) test cases for the target platform ({{TARGET_URL}}).
+
+The generated test cases will later be converted into automated Playwright browser tests.
+
+Generate test cases covering ONLY the UI functionality explicitly described in the requirements.
+
+Include UI scenarios such as:
+- Page loads, title, and URL validations (e.g. homepage, admin login page)
+- Element presence and visibility (hotel banner, navigation bar, room cards, booking buttons, contact form)
+- Form inputs, placeholders, field filling, and form submissions (Contact Us form, Admin login form)
+- Admin authentication via the web browser UI (valid login to /admin/rooms, invalid login, empty fields)
+- Positive UI journeys (e.g. submitting contact message, checking room details, admin logout)
+- Negative UI journeys (e.g. blank input validation, invalid email/phone validation on contact form)
+- Boundary conditions and UI field states
+
+Do NOT include pure REST API test cases in this file (API tests are generated separately).
+
+Return ONLY valid JSON.
+Do NOT return Markdown.
+Do NOT use ```json.
+Do NOT provide explanations outside the JSON.
+
+The JSON must follow exactly this structure:
+
+{
+  "test_cases": [
+    {
+      "id": "TC-UI-001",
+      "title": "Test case title",
+      "description": "Detailed description",
+      "type": "UI",
+      "priority": "High",
+      "category": "Homepage",
+      "preconditions": [
+        "Website is accessible"
+      ],
+      "test_data": {},
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Navigate to https://automationintesting.online/",
+          "expected_result": "Page loads and title is 'Restful-booker-platform demo'"
+        }
+      ],
+      "overall_expected_result": "Overall expected result",
+      "requirement_ids": [
+        "1.1", "1.2"
+      ]
+    }
+  ]
+}
+
+Rules:
+1. Every test case must have a unique ID (TC-UI-001, TC-UI-002, etc.).
+2. "type" MUST BE "UI" for all test cases.
+3. "priority" must be one of: High, Medium, Low.
+4. "category" must describe the UI feature area (e.g. Homepage, Rooms, Contact Form, Admin Auth).
+5. "preconditions" must always be an array of strings.
+6. "test_data" must always be a JSON object.
+7. "steps" must always be an array with step_number, action, and expected_result.
+8. Make the steps detailed enough so elements (buttons, fields, links) can be located on the web page.
+9. Refer to input/credentials.json for admin credentials; do not put plaintext passwords in the JSON.
+10. Do not generate duplicate test cases.
+
+SOFTWARE REQUIREMENTS:
+
+{{REQUIREMENTS}}

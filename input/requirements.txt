@@ -1,88 +1,66 @@
-Trello QA Requirements
+Shady Meadows B&B (automationintesting.online) QA Requirements
 
-1. Trello Homepage
+============================================================
+PART 1: USER INTERFACE (UI) REQUIREMENTS
+============================================================
 
-1. Verify that the Trello homepage opens successfully.
-2. Verify that the Trello page loads without errors.
-3. Verify that the Trello logo is visible.
-4. Verify that the "Log in" option is available.
-5. Verify that the "Get Trello for free" option is available.
-6. Verify that the "Features" section is available.
-7. Verify that the "Plans" section is available.
+1. Homepage & Navigation
+1.1 Verify that the homepage opens successfully at https://automationintesting.online/.
+1.2 Verify that the webpage title is "Restful-booker-platform demo".
+1.3 Verify that the hotel heading "Welcome to Shady Meadows B&B" is clearly visible.
+1.4 Verify that navigation links are available: Rooms, Booking, Location, Contact, and Admin.
+1.5 Verify that hotel contact information (address, phone, email) is displayed in the footer/contact section.
 
-2. User Login
+2. Room Listings & Booking Interface
+2.1 Verify that the "Our Rooms" section displays available rooms with titles, images, amenities, and pricing.
+2.2 Verify that each room card has a "Book now" button.
+2.3 Verify that the "Check Availability" button is present and clickable.
+2.4 Verify that clicking "Book now" on a room opens the booking/reservation interface with checkin and checkout options.
 
-1. Verify that a user can successfully log in using valid credentials stored in `credentials.json`.
-2. Verify that the user is redirected to the appropriate Trello page after successful login.
-3. Verify that the user can see the expected authenticated-user interface after login.
+3. Contact Form ("Send Us a Message")
+3.1 Verify that the contact form is visible with fields: Name, Email, Phone, Subject, and Message/Description.
+3.2 Verify that submitting the contact form with valid input displays a success confirmation message.
+3.3 Negative: Verify that submitting the contact form with empty fields displays appropriate validation errors.
+3.4 Negative: Verify that submitting an invalid email format triggers a validation error message.
+3.5 Negative: Verify that submitting a phone number with insufficient characters triggers a validation error message.
 
-Negative Login Tests
+4. Admin Authentication & Login (/admin)
+4.1 Verify that navigating to /admin displays the admin login form with Username and Password fields and a Login button.
+4.2 Verify that an admin user can successfully log in using valid credentials stored in input/credentials.json.
+4.3 Verify that successful login redirects the user to the admin dashboard at /admin/rooms.
+4.4 Verify that an authenticated admin can see dashboard options such as Rooms, Messages, Branding, and Logout.
+4.5 Negative: Verify that login fails when invalid username or password is provided.
+4.6 Negative: Verify that login cannot be completed when username or password field is empty.
+4.7 Verify that clicking the "Logout" button logs out the admin and returns to the login screen.
 
-4. Verify that login fails when an invalid username/email is provided.
-5. Verify that login fails when an invalid password is provided.
-6. Verify that login fails when both username/email and password are invalid.
-7. Verify that the appropriate validation or error message is displayed for invalid login credentials.
-8. Verify that login cannot be completed when the required username/email field is empty.
-9. Verify that login cannot be completed when the required password field is empty.
 
-3. Create a New Board
+============================================================
+PART 2: REST API REQUIREMENTS (Base URL: /api)
+============================================================
 
-After successful login:
+5. Branding API
+5.1 Verify that GET /api/branding returns HTTP status 200 OK.
+5.2 Verify that the response JSON contains the hotel name "Shady Meadows B&B".
+5.3 Verify that branding response contains map coordinates, description, and contact/address information.
 
-1. Verify that the user can create a new board with a valid board name.
-2. Verify that the newly created board is displayed successfully.
-3. Verify that the created board has the expected board name.
-4. Verify the board creation operation using the Trello REST API.
-5. Verify that the API response indicates successful board creation.
-6. Verify through the API that the newly created board exists and has the expected board name.
+6. Room API
+6.1 Verify that GET /api/room returns HTTP status 200 OK.
+6.2 Verify that the response JSON contains a list of rooms with roomName, type, accessible, and roomPrice.
+6.3 Verify that GET /api/room/{id} with a valid room ID returns HTTP status 200 OK with the room details.
+6.4 Negative: Verify that GET /api/room/{id} with a non-existent room ID (e.g. 999999) returns HTTP status 404 Not Found.
 
-4. Create a New Card
+7. Authentication API
+7.1 Verify that POST /api/auth/login with valid credentials in input/api_credentials.json returns HTTP status 200 OK.
+7.2 Verify that the login response contains a valid "token" string.
+7.3 Verify that POST /api/auth/validate with the generated token returns HTTP status 200 OK with {"valid": true}.
+7.4 Negative: Verify that POST /api/auth/login with invalid credentials returns HTTP status 401 Unauthorized or 403 Forbidden.
+7.5 Negative: Verify that POST /api/auth/login with empty/missing credentials returns an error status code (400 or 401).
 
-After the board has been created:
+8. Message & Contact API
+8.1 Verify that POST /api/message with valid contact payload creates a message and returns HTTP status 200 or 201.
+8.2 Verify that GET /api/message/count returns HTTP status 200 OK with a non-negative count property.
+8.3 Negative: Verify that POST /api/message with missing mandatory fields returns HTTP status 400 Bad Request.
 
-1. Verify that the user can create a new card in the appropriate list.
-2. Verify that the newly created card is displayed on the board.
-3. Verify that the newly created card has the expected card name.
-4. Verify the card creation operation using the Trello REST API.
-5. Verify that the API response indicates successful card creation.
-6. Verify through the API that the newly created card exists and belongs to the expected board/list.
-
-5. Delete the Newly Created Card
-
-1. Delete the newly created card.
-2. Verify through the Trello UI that the card is no longer present.
-3. Verify the card deletion operation using the Trello REST API.
-4. Verify that the API confirms that the card has been deleted or is no longer available.
-
-6. Add Text to the First Card
-
-1. Open the first card on the test board.
-2. Add valid text to the card description.
-3. Save the description.
-4. Verify through the UI that the added text is displayed correctly.
-5. Verify the updated card description using the Trello REST API.
-6. Verify that the API response contains the expected card description.
-
-7. Delete Text from the First Card
-
-1. Open the first card on the test board.
-2. Remove the existing text from the card description.
-3. Save the changes.
-4. Verify through the UI that the card description is empty.
-5. Verify the updated card description using the Trello REST API.
-6. Verify through the API that the card description is empty.
-
-8. API Validation
-
-For all Trello operations performed through the REST API:
-
-1. Verify that the request is sent to the correct Trello API endpoint.
-2. Verify the HTTP response status code.
-3. Verify that the API response contains the expected data.
-4. Verify that the created or modified resource has the expected ID and properties.
-5. Verify that the UI state matches the state returned by the API where applicable.
-6. Verify that failed API requests are handled and reported correctly.
-
-Use the official Trello REST API documentation when implementing API-based validation:
-
-https://developer.atlassian.com/cloud/trello/rest/
+9. Booking API
+9.1 Verify that GET /api/booking?roomid=1 returns HTTP status 200 OK with a list of bookings.
+9.2 Verify that each booking entry contains bookingid, roomid, firstname, lastname, and bookingdates.

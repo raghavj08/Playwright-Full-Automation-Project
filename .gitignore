@@ -7,3 +7,4 @@ test_plan.md
 tests/test_generated.py
 api_credentials.json
 credentials.json
+.playwright-mcp/

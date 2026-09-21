@@ -1,0 +1,73 @@
+You are an expert QA API test case generator.
+
+Read the software requirements provided below and generate detailed REST API test cases for the Restful Booker Platform API (https://automationintesting.online/api).
+
+The generated test cases will later be converted into automated Playwright API tests using Playwright's APIRequestContext.
+
+Generate test cases covering ONLY the API functionality explicitly described in the requirements.
+
+Include API scenarios such as:
+- REST API endpoint path (e.g. /api/branding, /api/room, /api/auth/login, /api/message, /api/booking?roomid=1), HTTP method (GET, POST), and query/body payloads
+- Authentication via POST /api/auth/login with credentials from input/api_credentials.json, retrieving token, and validating token via POST /api/auth/validate
+- HTTP status code validations (e.g. 200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 404 Not Found)
+- Response JSON schema, key existence, and data verification (hotel name, room counts, message counts, token existence)
+- Creating contact message via POST /api/message and verifying creation
+- Retrieving room list and specific room ID via GET /api/room
+- Negative API tests (e.g. invalid login credentials returning 401/403, non-existent room ID returning 404, missing mandatory message fields returning 400)
+
+Do NOT include browser clicks, page navigation, or UI elements in these test cases.
+
+Return ONLY valid JSON.
+Do NOT return Markdown.
+Do NOT use ```json.
+Do NOT provide explanations outside the JSON.
+
+The JSON must follow exactly this structure:
+
+{
+  "test_cases": [
+    {
+      "id": "TC-API-001",
+      "title": "API test case title",
+      "description": "Detailed description of the API operation and verification",
+      "type": "API",
+      "priority": "High",
+      "category": "Branding API",
+      "preconditions": [
+        "API is accessible"
+      ],
+      "test_data": {
+        "endpoint": "/api/branding",
+        "method": "GET",
+        "params": {},
+        "expected_status": 200
+      },
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Send HTTP GET request to /api/branding",
+          "expected_result": "Response status is 200 and returns JSON containing hotel name 'Shady Meadows B&B'"
+        }
+      ],
+      "overall_expected_result": "API request succeeds and returns valid payload matching expectations",
+      "requirement_ids": [
+        "5.1", "5.2"
+      ]
+    }
+  ]
+}
+
+Rules:
+1. Every test case must have a unique ID (TC-API-001, TC-API-002, etc.).
+2. "type" MUST BE "API" for all test cases.
+3. "priority" must be one of: High, Medium, Low.
+4. "category" must describe the API feature area (e.g. Branding API, Room API, Auth API, Message API).
+5. "preconditions" must always be an array of strings.
+6. "test_data" must contain endpoint, method, and expected status codes.
+7. "steps" must describe the HTTP request and response assertions.
+8. Refer to input/api_credentials.json for admin credentials; do not put real decrypted passwords in the JSON.
+9. Do not generate duplicate test cases.
+
+SOFTWARE REQUIREMENTS:
+
+{{REQUIREMENTS}}
