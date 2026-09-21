@@ -4,5 +4,6 @@ pytest
 playwright
 pytest-playwright
 requests
-allure-pytest
+pytest-html
 cryptography
+mcp

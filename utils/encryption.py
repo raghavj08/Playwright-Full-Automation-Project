@@ -30,10 +30,15 @@ def encrypt_value(value):
 
 def decrypt_value(encrypted_value):
 
-    cipher = get_cipher()
+    if not encrypted_value or not isinstance(encrypted_value, str):
+        return encrypted_value
 
-    decrypted_value = cipher.decrypt(
-        encrypted_value.encode()
-    )
-
-    return decrypted_value.decode()
+    try:
+        cipher = get_cipher()
+        decrypted_value = cipher.decrypt(
+            encrypted_value.encode()
+        )
+        return decrypted_value.decode()
+    except Exception:
+        # If the value is already plaintext (e.g., email or unencrypted username), return as is
+        return encrypted_value
