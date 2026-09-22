@@ -1,7 +1,6 @@
 ### Available Page Objects
-- `BasePage(page)`: Base class providing utility methods `navigate_to(url)`, `scroll_to_bottom()`.
-- `HomePage(page)`: Main landing page. Locators: `nav_rooms`, `nav_booking`, `nav_amenities`, `nav_location`, `nav_contact`, `nav_admin`, `welcome_heading`, `rooms_heading`, `single_room_book_button`, `double_room_book_button`, `suite_room_book_button`, `contact_name_input`, `contact_email_input`, `contact_phone_input`, `contact_subject_input`, `contact_message_input`, `contact_submit_button`. Actions: `navigate()`, `fill_contact_form(name, email, phone, subject, message)`, `submit_contact_form()`.
-- `AdminPage(page)`: Admin login and dashboard page. Locators: `login_heading`, `username_input`, `password_input`, `login_button`, `logout_button`, `front_page_link`. Actions: `navigate()`, `login(username, password)`, `logout()`.
-- `ReservationPage(page, room_id)`: Room reservation details page. Actions: `navigate()`.
-- `CookiePage(page)`: Cookie policy info page. Actions: `navigate()`.
-- `PrivacyPage(page)`: Privacy policy info page. Actions: `navigate()`.
+- `HomePage(page)`: Represents https://automationintesting.online/. Methods: `navigate()`, `fill_contact_form(name, email, phone, subject, message)`, `submit_contact_form()`, `click_book_single_room()`.
+- `AdminPage(page)`: Represents https://automationintesting.online/admin. Methods: `navigate()`, `login(username, password)`, `logout()`.
+- `ReservationPage(page, room_id)`: Represents /reservation/{room_id}. Methods: `navigate()`.
+- `CookiePage(page)`: Represents /cookie. Methods: `navigate()`.
+- `PrivacyPage(page)`: Represents /privacy. Methods: `navigate()`.
