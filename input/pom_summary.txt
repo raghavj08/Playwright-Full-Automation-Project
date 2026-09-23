@@ -1,6 +1,9 @@
 ### Available Page Objects
-- `HomePage(page)`: Represents https://automationintesting.online/. Methods: `navigate()`, `fill_contact_form(name, email, phone, subject, message)`, `submit_contact_form()`, `click_book_single_room()`.
-- `AdminPage(page)`: Represents https://automationintesting.online/admin. Methods: `navigate()`, `login(username, password)`, `logout()`.
-- `ReservationPage(page, room_id)`: Represents /reservation/{room_id}. Methods: `navigate()`.
-- `CookiePage(page)`: Represents /cookie. Methods: `navigate()`.
-- `PrivacyPage(page)`: Represents /privacy. Methods: `navigate()`.
+
+- **`BasePage(page)`**: Base class providing core utility methods (`navigate_to`, `scroll_to_bottom`, `get_title`).
+- **`HomePage(page)`**: Page Object for public homepage (`https://automationintesting.online/`).
+  - *Locators*: `welcome_heading`, `rooms_section_heading`, `nav_rooms`, `nav_booking`, `nav_amenities`, `nav_location`, `nav_contact`, `nav_admin`, `footer_address`, `footer_phone`, `footer_email`, `room_book_now_single`, `room_book_now_double`, `room_book_now_suite`, `contact_name_input`, `contact_email_input`, `contact_phone_input`, `contact_subject_input`, `contact_message_input`, `contact_submit_button`, `contact_success_message`.
+  - *Methods*: `navigate()`, `fill_contact_form(name, email, phone, subject, message)`, `submit_contact_form()`, `click_book_now_single()`.
+- **`AdminPage(page)`**: Page Object for admin login and dashboard (`https://automationintesting.online/admin`).
+  - *Locators*: `login_heading`, `username_input`, `password_input`, `login_button`, `logout_button`, `front_page_link`, `admin_navbar_rooms`, `admin_navbar_messages`, `admin_navbar_branding`.
+  - *Methods*: `navigate()`, `login(username, password)`, `logout()`.

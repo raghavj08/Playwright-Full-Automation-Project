@@ -19,7 +19,7 @@ def generate_runtime_poms(page_snapshots, locator_data, test_cases, target_url, 
 
     Writes the generated Python files into pages/ and returns a formatted pom_summary string.
     """
-    from helper.mcp_code import call_gemini_with_retry
+    from helper.gemini_helper import call_gemini_with_retry
 
     print("\n" + "=" * 50)
     print("[POM Generator] Synthesizing Runtime Page Object Models...")
