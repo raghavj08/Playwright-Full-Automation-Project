@@ -1,11 +1,10 @@
 import os
 import json
-from constants.constants import MODEL, BASE_URL, API_BASE_URL
+from constants.constants import MODEL, BASE_URL, API_BASE_URL, TESTS_DIR
 from helper.gemini_helper import (
     read_file,
     call_gemini_with_retry,
     sanitize_playwright_python_code,
-    TESTS_DIR,
 )
 
 

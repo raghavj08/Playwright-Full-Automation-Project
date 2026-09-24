@@ -1,9 +1,22 @@
 ### Available Page Objects
 
-- **`BasePage(page)`**: Base class providing core utility methods (`navigate_to`, `scroll_to_bottom`, `get_title`).
-- **`HomePage(page)`**: Page Object for public homepage (`https://automationintesting.online/`).
-  - *Locators*: `welcome_heading`, `rooms_section_heading`, `nav_rooms`, `nav_booking`, `nav_amenities`, `nav_location`, `nav_contact`, `nav_admin`, `footer_address`, `footer_phone`, `footer_email`, `room_book_now_single`, `room_book_now_double`, `room_book_now_suite`, `contact_name_input`, `contact_email_input`, `contact_phone_input`, `contact_subject_input`, `contact_message_input`, `contact_submit_button`, `contact_success_message`.
-  - *Methods*: `navigate()`, `fill_contact_form(name, email, phone, subject, message)`, `submit_contact_form()`, `click_book_now_single()`.
-- **`AdminPage(page)`**: Page Object for admin login and dashboard (`https://automationintesting.online/admin`).
-  - *Locators*: `login_heading`, `username_input`, `password_input`, `login_button`, `logout_button`, `front_page_link`, `admin_navbar_rooms`, `admin_navbar_messages`, `admin_navbar_branding`.
-  - *Methods*: `navigate()`, `login(username, password)`, `logout()`.
+- `BasePage(page)`
+  - **Description**: Base class providing common utilities.
+  - **Methods**: `navigate_to(url)`, `scroll_to_bottom()`
+
+- `HomePage(page)`
+  - **Description**: Represents the main public homepage (`https://automationintesting.online/`).
+  - **Locators**: `nav_rooms`, `nav_booking`, `nav_amenities`, `nav_location`, `nav_contact`, `nav_admin`, `main_heading`, `rooms_heading`, `checkin_textbox`, `checkout_textbox`, `check_availability_button`, `room_book_now_single`, `room_book_now_double`, `room_book_now_suite`, `contact_name`, `contact_email`, `contact_phone`, `contact_subject`, `contact_message`, `contact_submit_button`, `footer_address`
+  - **Methods**: 
+    - `navigate()`
+    - `click_admin_nav()`
+    - `fill_contact_form(name, email, phone, subject, message)`
+    - `submit_contact_form()`
+
+- `AdminPage(page)`
+  - **Description**: Represents the admin portal and login screen (`https://automationintesting.online/admin`).
+  - **Locators**: `login_heading`, `username_textbox`, `password_textbox`, `login_button`, `logout_button`, `front_page_link`
+  - **Methods**: 
+    - `navigate()`
+    - `login(username, password)`
+    - `logout()`

@@ -3,16 +3,13 @@ import json
 import asyncio
 from mcp import Client, StdioServerParameters
 
-from constants.constants import MODEL, BASE_URL
+from constants.constants import MODEL, BASE_URL, BASE_DIR, INPUT_DIR
 from helper.gemini_helper import (
     get_gemini_client,
     call_gemini_with_retry,
     sanitize_playwright_python_code,
 )
 from helper.pom_generator import generate_runtime_poms
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-INPUT_DIR = os.path.join(BASE_DIR, "input")
 
 
 async def inspect_website_with_mcp(test_cases, target_url=BASE_URL, client=None):

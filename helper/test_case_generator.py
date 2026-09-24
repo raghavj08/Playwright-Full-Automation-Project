@@ -1,8 +1,8 @@
 import os
 import json
 import sys
-from constants.constants import MODEL, BASE_URL, API_BASE_URL
-from helper.gemini_helper import read_file, call_gemini_with_retry, TESTS_DIR
+from constants.constants import MODEL, BASE_URL, API_BASE_URL, TESTS_DIR
+from helper.gemini_helper import read_file, call_gemini_with_retry
 
 
 def generate_test_cases(testing_type="UI", target_url=None, client=None):

@@ -119,8 +119,14 @@ def main():
         client=client,
     )
 
-    # 5. Run Pytest with Autonomous Self-Healing
-    run_tests(testing_type=testing_type, pom_summary=pom_summary, client=client)
+    # 5. Run Pytest with Autonomous Self-Healing & Report Generation
+    run_tests(
+        testing_type=testing_type,
+        target_url=target_url,
+        test_cases=test_cases,
+        pom_summary=pom_summary,
+        client=client,
+    )
 
 
 if __name__ == "__main__":

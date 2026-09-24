@@ -1,0 +1,415 @@
+{
+  "test_cases": [
+    {
+      "id": "TC-UI-001",
+      "title": "Homepage load and title validation",
+      "description": "Verify that the homepage opens successfully at the correct URL and has the expected browser title.",
+      "type": "UI",
+      "priority": "High",
+      "category": "Homepage",
+      "preconditions": [
+        "Website is accessible"
+      ],
+      "test_data": {
+        "url": "https://automationintesting.online/",
+        "expected_title": "Restful-booker-platform demo"
+      },
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Navigate to https://automationintesting.online/",
+          "expected_result": "Page loads successfully and the title is 'Restful-booker-platform demo'"
+        }
+      ],
+      "overall_expected_result": "Homepage loads with correct URL and title.",
+      "requirement_ids": [
+        "1.1",
+        "1.2"
+      ]
+    },
+    {
+      "id": "TC-UI-002",
+      "title": "Homepage main heading and navigation links visibility",
+      "description": "Verify that the hotel heading and all required navigation links are visible on the homepage.",
+      "type": "UI",
+      "priority": "High",
+      "category": "Homepage",
+      "preconditions": [
+        "Homepage is loaded"
+      ],
+      "test_data": {},
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Locate the hotel heading on the page",
+          "expected_result": "Hotel heading 'Welcome to Shady Meadows B&B' is clearly visible"
+        },
+        {
+          "step_number": 2,
+          "action": "Locate the navigation bar",
+          "expected_result": "Navigation links Rooms, Booking, Location, Contact, and Admin are available"
+        }
+      ],
+      "overall_expected_result": "Main heading and all navigation links are present and visible.",
+      "requirement_ids": [
+        "1.3",
+        "1.4"
+      ]
+    },
+    {
+      "id": "TC-UI-003",
+      "title": "Hotel contact information in footer",
+      "description": "Verify that hotel contact information including address, phone, and email is displayed in the footer or contact section.",
+      "type": "UI",
+      "priority": "Medium",
+      "category": "Homepage",
+      "preconditions": [
+        "Homepage is loaded"
+      ],
+      "test_data": {},
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Scroll down to the footer/contact section of the homepage",
+          "expected_result": "Hotel address, phone number, and email are displayed"
+        }
+      ],
+      "overall_expected_result": "Contact details are visible in the footer.",
+      "requirement_ids": [
+        "1.5"
+      ]
+    },
+    {
+      "id": "TC-UI-004",
+      "title": "Room listings display and booking buttons",
+      "description": "Verify that the 'Our Rooms' section displays room listings with titles, images, amenities, pricing, and action buttons.",
+      "type": "UI",
+      "priority": "High",
+      "category": "Rooms",
+      "preconditions": [
+        "Homepage is loaded"
+      ],
+      "test_data": {},
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Scroll to the 'Our Rooms' section",
+          "expected_result": "Available rooms are displayed with titles, images, amenities, and pricing"
+        },
+        {
+          "step_number": 2,
+          "action": "Check each room card for action buttons",
+          "expected_result": "'Book now' button and 'Check Availability' button are present and clickable on the room cards"
+        }
+      ],
+      "overall_expected_result": "Room cards show all details and required buttons.",
+      "requirement_ids": [
+        "2.1",
+        "2.2",
+        "2.3"
+      ]
+    },
+    {
+      "id": "TC-UI-005",
+      "title": "Open room booking interface",
+      "description": "Verify that clicking 'Book now' on a room opens the booking/reservation interface.",
+      "type": "UI",
+      "priority": "High",
+      "category": "Rooms",
+      "preconditions": [
+        "Homepage is loaded and rooms are displayed"
+      ],
+      "test_data": {},
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Click the 'Book now' button on a room card",
+          "expected_result": "Booking/reservation interface opens with checkin and checkout options"
+        }
+      ],
+      "overall_expected_result": "Reservation interface opens successfully upon clicking Book now.",
+      "requirement_ids": [
+        "2.4"
+      ]
+    },
+    {
+      "id": "TC-UI-006",
+      "title": "Contact form successful submission",
+      "description": "Verify that the contact form is visible and submitting valid inputs displays a success confirmation message.",
+      "type": "UI",
+      "priority": "High",
+      "category": "Contact Form",
+      "preconditions": [
+        "Homepage is loaded"
+      ],
+      "test_data": {
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "phone": "01234567890",
+        "subject": "Inquiry about booking",
+        "message": "Hello, I would like to know more details about your rooms and availability."
+      },
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Scroll to the contact form section",
+          "expected_result": "Contact form is visible with Name, Email, Phone, Subject, and Message/Description fields"
+        },
+        {
+          "step_number": 2,
+          "action": "Fill in Name, Email, Phone, Subject, and Message with valid test data",
+          "expected_result": "Fields are populated correctly"
+        },
+        {
+          "step_number": 3,
+          "action": "Click the Submit button on the contact form",
+          "expected_result": "Success confirmation message is displayed"
+        }
+      ],
+      "overall_expected_result": "Contact form submits successfully and shows confirmation.",
+      "requirement_ids": [
+        "3.1",
+        "3.2"
+      ]
+    },
+    {
+      "id": "TC-UI-007",
+      "title": "Contact form empty fields validation",
+      "description": "Verify that submitting the contact form with empty fields displays appropriate validation errors.",
+      "type": "UI",
+      "priority": "Medium",
+      "category": "Contact Form",
+      "preconditions": [
+        "Homepage is loaded"
+      ],
+      "test_data": {},
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Scroll to the contact form section",
+          "expected_result": "Contact form is visible"
+        },
+        {
+          "step_number": 2,
+          "action": "Leave all input fields blank and click the Submit button",
+          "expected_result": "Appropriate validation error messages are displayed for the empty fields"
+        }
+      ],
+      "overall_expected_result": "Validation errors are shown for empty form submission.",
+      "requirement_ids": [
+        "3.3"
+      ]
+    },
+    {
+      "id": "TC-UI-008",
+      "title": "Contact form invalid email format validation",
+      "description": "Verify that submitting an invalid email format triggers a validation error message.",
+      "type": "UI",
+      "priority": "Medium",
+      "category": "Contact Form",
+      "preconditions": [
+        "Homepage is loaded"
+      ],
+      "test_data": {
+        "name": "John Doe",
+        "email": "invalid-email-format",
+        "phone": "01234567890",
+        "subject": "Test Subject",
+        "message": "Test message description here."
+      },
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Fill in contact form fields with valid data except enter an invalid email (e.g. invalid-email-format)",
+          "expected_result": "Form fields are filled"
+        },
+        {
+          "step_number": 2,
+          "action": "Click the Submit button",
+          "expected_result": "Validation error message regarding the invalid email format is displayed"
+        }
+      ],
+      "overall_expected_result": "Email format validation triggers correctly.",
+      "requirement_ids": [
+        "3.4"
+      ]
+    },
+    {
+      "id": "TC-UI-009",
+      "title": "Contact form insufficient phone number characters validation",
+      "description": "Verify that submitting a phone number with insufficient characters triggers a validation error message.",
+      "type": "UI",
+      "priority": "Medium",
+      "category": "Contact Form",
+      "preconditions": [
+        "Homepage is loaded"
+      ],
+      "test_data": {
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "phone": "123",
+        "subject": "Test Subject",
+        "message": "Test message description here."
+      },
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Fill in contact form fields with valid data except enter a short phone number (e.g. 123)",
+          "expected_result": "Form fields are filled"
+        },
+        {
+          "step_number": 2,
+          "action": "Click the Submit button",
+          "expected_result": "Validation error message regarding the phone number length is displayed"
+        }
+      ],
+      "overall_expected_result": "Phone character length validation triggers correctly.",
+      "requirement_ids": [
+        "3.5"
+      ]
+    },
+    {
+      "id": "TC-UI-010",
+      "title": "Admin login page elements visibility",
+      "description": "Verify that navigating to /admin displays the admin login form with Username and Password fields and a Login button.",
+      "type": "UI",
+      "priority": "High",
+      "category": "Admin Auth",
+      "preconditions": [
+        "Website is accessible"
+      ],
+      "test_data": {
+        "url": "https://automationintesting.online/admin"
+      },
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Navigate to https://automationintesting.online/admin",
+          "expected_result": "Admin login page loads displaying Username field, Password field, and Login button"
+        }
+      ],
+      "overall_expected_result": "Admin login elements are present and visible.",
+      "requirement_ids": [
+        "4.1"
+      ]
+    },
+    {
+      "id": "TC-UI-011",
+      "title": "Admin successful login and dashboard access",
+      "description": "Verify that an admin user can successfully log in using valid credentials from input/credentials.json and is redirected to the dashboard.",
+      "type": "UI",
+      "priority": "High",
+      "category": "Admin Auth",
+      "preconditions": [
+        "Admin login page is open",
+        "Valid admin credentials available in input/credentials.json"
+      ],
+      "test_data": {},
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Enter valid username in the Username field",
+          "expected_result": "Username field is populated"
+        },
+        {
+          "step_number": 2,
+          "action": "Enter valid password in the Password field",
+          "expected_result": "Password field is populated"
+        },
+        {
+          "step_number": 3,
+          "action": "Click the Login button",
+          "expected_result": "User is successfully logged in and redirected to /admin/rooms"
+        },
+        {
+          "step_number": 4,
+          "action": "Inspect the admin dashboard interface",
+          "expected_result": "Dashboard options such as Rooms, Messages, Branding, and Logout are visible"
+        }
+      ],
+      "overall_expected_result": "Admin logs in successfully, lands on /admin/rooms, and sees all dashboard options.",
+      "requirement_ids": [
+        "4.2",
+        "4.3",
+        "4.4"
+      ]
+    },
+    {
+      "id": "TC-UI-012",
+      "title": "Admin login failure with invalid credentials",
+      "description": "Verify that login fails when invalid username or password is provided.",
+      "type": "UI",
+      "priority": "High",
+      "category": "Admin Auth",
+      "preconditions": [
+        "Admin login page is open"
+      ],
+      "test_data": {
+        "invalid_username": "wronguser",
+        "invalid_password": "wrongpassword"
+      },
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Enter invalid username and password into the login form",
+          "expected_result": "Fields are populated with invalid credentials"
+        },
+        {
+          "step_number": 2,
+          "action": "Click the Login button",
+          "expected_result": "Login fails and user remains on the login page / error message is displayed"
+        }
+      ],
+      "overall_expected_result": "Invalid login attempt is rejected.",
+      "requirement_ids": [
+        "4.5"
+      ]
+    },
+    {
+      "id": "TC-UI-013",
+      "title": "Admin login failure with empty fields",
+      "description": "Verify that login cannot be completed when username or password field is empty.",
+      "type": "UI",
+      "priority": "Medium",
+      "category": "Admin Auth",
+      "preconditions": [
+        "Admin login page is open"
+      ],
+      "test_data": {},
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Leave username and password fields empty and click the Login button",
+          "expected_result": "Login is prevented and user remains on the login screen / validation error is shown"
+        }
+      ],
+      "overall_expected_result": "Empty field login attempt is blocked.",
+      "requirement_ids": [
+        "4.6"
+      ]
+    },
+    {
+      "id": "TC-UI-014",
+      "title": "Admin logout functionality",
+      "description": "Verify that clicking the 'Logout' button logs out the admin and returns to the login screen.",
+      "type": "UI",
+      "priority": "High",
+      "category": "Admin Auth",
+      "preconditions": [
+        "Admin is successfully logged in and on the dashboard"
+      ],
+      "test_data": {},
+      "steps": [
+        {
+          "step_number": 1,
+          "action": "Click the 'Logout' button on the admin dashboard",
+          "expected_result": "Admin user is logged out and redirected back to the login screen"
+        }
+      ],
+      "overall_expected_result": "Logout action successfully returns user to login screen.",
+      "requirement_ids": [
+        "4.7"
+      ]
+    }
+  ]
+}
