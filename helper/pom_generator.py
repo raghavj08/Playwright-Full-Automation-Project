@@ -3,11 +3,7 @@ import sys
 import json
 import re
 
-from constants.constants import MODEL
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PAGES_DIR = os.path.join(BASE_DIR, "pages")
-INPUT_DIR = os.path.join(BASE_DIR, "input")
+from constants.constants import MODEL, BASE_DIR, PAGES_DIR, INPUT_DIR
 
 
 def generate_runtime_poms(page_snapshots, locator_data, test_cases, target_url, client=None):

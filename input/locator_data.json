@@ -1,0 +1,37 @@
+{
+  "HomePage": {
+    "url": "https://automationintesting.online/",
+    "locators": {
+      "nav_rooms": "page.get_by_role(\"link\", name=\"Rooms\")",
+      "nav_booking": "page.get_by_role(\"link\", name=\"Booking\")",
+      "nav_amenities": "page.get_by_role(\"link\", name=\"Amenities\")",
+      "nav_location": "page.get_by_role(\"link\", name=\"Location\")",
+      "nav_contact": "page.get_by_role(\"link\", name=\"Contact\")",
+      "nav_admin": "page.get_by_role(\"link\", name=\"Admin\")",
+      "main_heading": "page.get_by_role(\"heading\", name=\"Welcome to Shady Meadows B&B\")",
+      "checkin_textbox": "page.locator(\"input.form-control[type='text']\").first",
+      "checkout_textbox": "page.locator(\"input.form-control[type='text']\").nth(1)",
+      "check_availability_button": "page.get_by_role(\"button\", name=\"Check Availability\")",
+      "room_book_now_single": "page.locator(\"div.hotel-room-info\").filter(has_text=\"Single\").get_by_role(\"link\", name=\"Book now\")",
+      "room_book_now_double": "page.locator(\"div.hotel-room-info\").filter(has_text=\"Double\").get_by_role(\"link\", name=\"Book now\")",
+      "room_book_now_suite": "page.locator(\"div.hotel-room-info\").filter(has_text=\"Suite\").get_by_role(\"link\", name=\"Book now\")",
+      "contact_name": "page.get_by_role(\"textbox\", name=\"Name\")",
+      "contact_email": "page.get_by_role(\"textbox\", name=\"Email\")",
+      "contact_phone": "page.get_by_role(\"textbox\", name=\"Phone\")",
+      "contact_subject": "page.get_by_role(\"textbox\", name=\"Subject\")",
+      "contact_message": "page.locator(\"#description\")",
+      "contact_submit_button": "page.get_by_role(\"button\", name=\"Submit\")",
+      "footer_address": "page.get_by_text(\"Shady Meadows B&B, Shadows valley\")"
+    }
+  },
+  "AdminPage": {
+    "url": "https://automationintesting.online/admin",
+    "locators": {
+      "username_textbox": "page.get_by_role(\"textbox\", name=\"Username\")",
+      "password_textbox": "page.get_by_role(\"textbox\", name=\"Password\")",
+      "login_button": "page.get_by_role(\"button\", name=\"Login\")",
+      "logout_button": "page.get_by_role(\"button\", name=\"Logout\")",
+      "front_page_link": "page.get_by_role(\"link\", name=\"Front Page\")"
+    }
+  }
+}

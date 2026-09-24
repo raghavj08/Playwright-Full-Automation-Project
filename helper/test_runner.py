@@ -1,16 +1,13 @@
 import os
 import sys
 import subprocess
-from constants.constants import MODEL
+from constants.constants import MODEL, BASE_DIR, TESTS_DIR, REPORTS_DIR, INPUT_DIR
 from helper.gemini_helper import (
     read_file,
     call_gemini_with_retry,
     sanitize_playwright_python_code,
-    BASE_DIR,
-    TESTS_DIR,
-    REPORTS_DIR,
-    INPUT_DIR,
 )
+from helper.report_generator import generate_markdown_report
 
 
 def heal_test_code_with_gemini(
@@ -88,16 +85,21 @@ def run_tests(
     testing_type="UI",
     max_healing_attempts=3,
     pom_summary=None,
-    client=None
+    client=None,
+    target_url=None,
+    test_cases=None,
 ):
     """
     Executes pytest against the generated test script.
     If tests fail, automatically triggers the LLM to interpret failures,
     edit tests/testcase.py, and rerun until all tests pass or max attempts reached.
+    Generates both HTML and Markdown (reports/report.md) test execution reports.
     """
     testcase_path = os.path.join(TESTS_DIR, "testcase.py")
     report_html = os.path.join(REPORTS_DIR, "test_report.html")
+    report_xml = os.path.join(REPORTS_DIR, "junit_report.xml")
     failure_txt = os.path.join(REPORTS_DIR, "pytest_failure.txt")
+    report_md = os.path.join(REPORTS_DIR, "report.md")
 
     for attempt in range(1, max_healing_attempts + 2):
         print("\n" + "=" * 50)
@@ -114,7 +116,8 @@ def run_tests(
                 "pytest",
                 testcase_path,
                 f"--html={report_html}",
-                "--self-contained-html"
+                "--self-contained-html",
+                f"--junitxml={report_xml}",
             ],
             cwd=BASE_DIR,
             capture_output=True,
@@ -130,8 +133,13 @@ def run_tests(
         if result.returncode == 0:
             print("\n" + "=" * 50)
             print("SUCCESS: ALL TESTS PASSED!")
-            print(f"Report: {report_html}")
+            print(f"HTML Report     : {report_html}")
+            
+            # Generate simple Markdown report in reports/
+            generate_markdown_report(testing_type=testing_type, target_url=target_url)
+            print(f"Markdown Report : {report_md}")
             print("=" * 50 + "\n")
+
             if os.path.exists(failure_txt):
                 try:
                     os.remove(failure_txt)
@@ -147,7 +155,24 @@ def run_tests(
             file.write(result.stderr)
         print(f"Failure details saved to {failure_txt}")
 
+        # Generate report for current test execution before healing
+        generate_markdown_report(testing_type=testing_type, target_url=target_url)
+        print(f"Markdown Report : {report_md}")
+        print(f"HTML Report     : {report_html}")
+
         if attempt <= max_healing_attempts:
+            print("\n" + "=" * 50)
+            print("HUMAN-IN-THE-LOOP: TEST FAILURE HEALING APPROVAL")
+            print("=" * 50)
+            try:
+                heal_approval = input("\nDo you want Gemini to analyze failures and auto-heal the test code? (yes/no): ").strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                heal_approval = "no"
+
+            if heal_approval not in ["yes", "y"]:
+                print("\nAuto-healing skipped by user. Exiting test execution with current report.")
+                return False
+
             print(f"\n[Auto-Healer] Triggering Gemini to interpret failures and auto-heal test cases (Healing attempt {attempt}/{max_healing_attempts})...")
             with open(testcase_path, "r", encoding="utf-8") as file:
                 current_code = file.read()
@@ -170,4 +195,7 @@ def run_tests(
                 break
         else:
             print(f"\n[Auto-Healer] Max healing attempts ({max_healing_attempts}) reached. Tests still failing.")
-            return False
+            break
+
+    return False
+

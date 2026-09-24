@@ -9,6 +9,7 @@ from helper.code_generator import generate_playwright_code
 from helper.test_runner import run_tests, heal_test_code_with_gemini
 from helper.mcp_code import inspect_website_with_mcp
 from helper.pom_generator import generate_runtime_poms
+from helper.report_generator import generate_markdown_report
 
 __all__ = [
     "get_gemini_client",
@@ -21,4 +22,5 @@ __all__ = [
     "heal_test_code_with_gemini",
     "inspect_website_with_mcp",
     "generate_runtime_poms",
+    "generate_markdown_report",
 ]

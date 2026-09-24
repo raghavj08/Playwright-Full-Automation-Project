@@ -7,15 +7,15 @@ from google import genai
 
 load_dotenv()
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TESTS_DIR = os.path.join(BASE_DIR, "tests")
-REPORTS_DIR = os.path.join(BASE_DIR, "reports")
-INPUT_DIR = os.path.join(BASE_DIR, "input")
-PROMPTS_DIR = os.path.join(BASE_DIR, "prompts")
-
-os.makedirs(TESTS_DIR, exist_ok=True)
-os.makedirs(REPORTS_DIR, exist_ok=True)
-os.makedirs(INPUT_DIR, exist_ok=True)
+from constants.constants import (
+    BASE_DIR,
+    TESTS_DIR,
+    REPORTS_DIR,
+    INPUT_DIR,
+    PROMPTS_DIR,
+    PAGES_DIR,
+    SCREENSHOTS_DIR,
+)
 
 _client = None
 
